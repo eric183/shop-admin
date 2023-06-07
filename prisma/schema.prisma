@@ -1,0 +1,135 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  password      String
+  isValidate    Boolean  @default(false)
+  validateToken String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  roles         Role     @default(USER)
+
+  orders Order[]
+  status userStatus @default(ACTIVE)
+}
+
+// 定义 spu 模型
+model SPU {
+  id       String  @id @default(cuid()) // spu 的 id
+  name     String // spu 的名称
+  brand    String // spu 的品牌
+  category String // spu 的类别
+  skus     SKU[] // spu 对应的 sku 列表
+  Stock    Stock[]
+}
+
+// 定义 sku 模型
+model SKU {
+  id        String      @id @default(cuid()) // sku 的 id
+  price     Float // sku 的价格
+  stock     Int // sku 的库存
+  image     String // sku 的图片
+  spu       SPU         @relation(fields: [spuId], references: [id]) // sku 所属的 spu
+  spuId     String // sku 所属的 spu 的 id
+  attribute Json // sku 的销售属性，用 json 格式存储，比如 {"color": "red", "size": "M"}
+  OrderItem OrderItem[]
+  Stock     Stock[]
+}
+
+// 库存模型
+model Stock {
+  id       String @id @default(cuid())
+  spuId    String
+  spu      SPU    @relation(fields: [spuId], references: [id])
+  skuId    String
+  sku      SKU    @relation(fields: [skuId], references: [id])
+  quantity Int
+
+  // 预购库存
+  preQuantity Int @default(0)
+
+  // 剩余库存
+  remainQuantity Int @default(0)
+
+  // 实际库存
+  actualQuantity Int @default(0)
+
+  // 入库日期
+  createdAt DateTime @default(now())
+
+  // 出库日期
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id         String      @id @default(cuid())
+  userId     String
+  user       User        @relation(fields: [userId], references: [id])
+  sortNumber Int
+  orderItems OrderItem[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  shipments  Shipment[]
+  deposit    Float //订金
+
+  orderStatus  orderStatus @default(UNPAID)
+  // 尾款
+  finalPayment Float       @default(0)
+}
+
+model Shipment {
+  id         String   @id @default(cuid())
+  officialId String?
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id])
+  address    String
+  url        String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model OrderItem {
+  // id        String      @id @default(cuid())
+  orderId  String
+  order    Order  @relation(fields: [orderId], references: [id])
+  skuId    String
+  sku      SKU    @relation(fields: [skuId], references: [id])
+  quantity Int
+
+  prePrice Float @default(0)
+
+  isReceived Boolean @default(false)
+
+  @@id([orderId, skuId]) // 使用 orderId 和 skuId 作为联合主键
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum userStatus {
+  ACTIVE
+  INACTIVE
+  DELETED
+}
+
+enum orderStatus {
+  UNPAID
+  PAID
+  SHIPPED
+  RECEIVED
+  CANCELLED
+}
