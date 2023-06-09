@@ -3,6 +3,8 @@ import GithubProvider from "next-auth/providers/github";
 import EmailProvider from "next-auth/providers/email";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { sendVerificationRequest } from "../../../../utils/helpers/mailRequest";
+import sanityClient from "~base/sanity/client";
+import authGROQ from "~base/sanity/groqs/auth";
 
 export const authOptions: NextAuthOptions = {
   // Configure one or more authentication providers
@@ -26,7 +28,19 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        console.log(credentials, "...!!!.");
+        if (!credentials) return null;
+        const { email, password } = credentials;
+
+        const user = await sanityClient.fetch(authGROQ, {
+          email,
+          password,
+        });
+
+        console.log(user, "......");
+
+        if (user.length > 0) {
+          return user[0];
+        }
 
         return null;
       },
@@ -34,6 +48,38 @@ export const authOptions: NextAuthOptions = {
 
     // ...add more providers here
   ],
+
+  callbacks: {
+    async jwt({ token, user }) {
+      // console.log(token, "...response token");
+      // console.log("...response user begin", user, "...response user end");
+      if (user) {
+        token.user = user;
+      }
+      return token;
+    },
+    session: ({ session, token }) => {
+      if (token) {
+        session.user = token.user as any;
+        // session.id = token.id;
+        // session.name = token.name;
+        // session.username = token.surname;
+        // session.email = token.email;
+      }
+      return session;
+    },
+    // async signIn({ user, account, profile, email, credentials }) {
+    //   console.log(user, "...sa.df.a.sdf.");
+    //   if (user) {
+    //     return true;
+    //   } else {
+    //     // Return false to display a default error message
+    //     return false;
+    //     // Or you can return a URL to redirect to:
+    //     // return '/unauthorized'
+    //   }
+    // },
+  },
 };
 
 // identifier: process.env.EMAIL_SENDER,

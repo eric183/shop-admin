@@ -1,5 +1,5 @@
 {
-  "name": "eric183.github.io",
+  "name": "shop-admin",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -11,6 +11,7 @@
     "start:sanity": "sanity start",
     "build:sanity": "sanity build",
     "deploy:sanity": "sanity deploy",
+    "studio:sanity": "sanity studio",
     "deploy-graphql:sanity": "sanity graphql deploy"
   },
   "dependencies": {
@@ -52,6 +53,7 @@
     "leva": "0.9.29",
     "next": "^13.4.4",
     "next-auth": "^4.22.1",
+    "next-sanity": "^4.3.3",
     "nodemailer": "^6.9.3",
     "postcss": "^8.4.20",
     "postprocessing": "^6.29.3",
