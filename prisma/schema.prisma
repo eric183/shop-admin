@@ -14,15 +14,35 @@ model User {
   id            String   @id @default(cuid())
   email         String   @unique
   name          String?
-  password      String
-  isValidate    Boolean  @default(false)
-  validateToken String?
+  status userStatus @default(ACTIVE)
+  // 一个用户可以有多个账号
+  accounts Account[]
+  
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  roles         Role     @default(USER)
+}
 
+model Account {
+  id      String @id @unique @default(cuid())
+  verified Boolean @default(false)
+  avatar String?
+  role Role
+  user User? @relation(fields: [userId], references: [id])
+  userId String?
+  username String?
+  email String?
+  authToken String?
+  isValidate    Boolean  @default(false)
+  validateToken String?
+
+
+  accessToken String?
+  accessTokenExpiredAt DateTime?
+  password String?
   orders Order[]
-  status userStatus @default(ACTIVE)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 // 定义 spu 模型
@@ -75,8 +95,8 @@ model Stock {
 
 model Order {
   id         String      @id @default(cuid())
-  userId     String
-  user       User        @relation(fields: [userId], references: [id])
+  accoundId     String
+  accound       Account        @relation(fields: [accoundId], references: [id])
   sortNumber Int
   orderItems OrderItem[]
   createdAt  DateTime    @default(now())
@@ -118,6 +138,7 @@ model OrderItem {
 enum Role {
   ADMIN
   USER
+  GUEST
 }
 
 enum userStatus {
