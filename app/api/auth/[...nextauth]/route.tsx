@@ -4,7 +4,7 @@ import EmailProvider from "next-auth/providers/email";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { sendVerificationRequest } from "../../../../utils/helpers/mailRequest";
 import sanityClient from "~base/sanity/client";
-import authGROQ from "~base/sanity/groqs/auth";
+import authGROQ from "~app/api/groqs/auth";
 
 export const authOptions: NextAuthOptions = {
   // Configure one or more authentication providers

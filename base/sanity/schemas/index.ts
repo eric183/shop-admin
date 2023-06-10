@@ -1,11 +1,19 @@
+import user from "./user";
+import account from "./account";
+import shipment from "./shipment";
+import order from "./order";
+import sku from "./sku";
+import spu from "./spu";
+import inventory from "./inventory";
+import orderItem from "./orderItem";
 
-import user from './user'
-import account from './account'
-import shipment from './shipment'
-import order from './order'
-import orderItem from './orderItem'
-import stock from './stock'
-import sku from './sku'
-import spu from './spu'
-
-export const schemaTypes = [user, account, shipment, order, orderItem, stock, sku, spu]
+export const schemaTypes = [
+  user,
+  account,
+  shipment,
+  order,
+  orderItem,
+  inventory,
+  sku,
+  spu,
+];

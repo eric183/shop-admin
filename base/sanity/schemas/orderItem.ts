@@ -1,53 +1,50 @@
-import { defineType } from "sanity";
+import { defineType, defineField } from "sanity";
 
 export default defineType({
-  "title": "Order Item",
-  "name": "orderItem",
-  "type": "document",
-  "fields": [
+  name: "orderItem",
+  title: "Order Item",
+  type: "document",
+  fields: [
     {
-      "type": "reference",
-      "name": "order",
-      "title": "Order",
-      "to": [
-        {
-          "type": "order"
-        }
-      ]
+      name: "sku",
+      title: "Order Sku",
+      type: "reference",
+      to: [{ type: "sku" }],
     },
     {
-      "type": "reference",
-      "name": "sku",
-      "title": "SKU",
-      "to": [
-        {
-          "type": "sku"
-        }
-      ]
+      type: "number",
+      name: "quantity",
+      title: "Quantity",
+      validation: (Rule) => Rule.required(),
     },
     {
-      "type": "number",
-      "name": "quantity",
-      "title": "Quantity",
-      "validation": Rule => Rule.required()
+      type: "number",
+      name: "prePrice",
+      title: "Pre Price",
+      initialValue: 0,
     },
     {
-      "type": "number",
-      "name": "prePrice",
-      "title": "Pre Price",
-      "initialValue": 0
+      type: "boolean",
+      name: "isReceived",
+      title: "Is Received",
+      initialValue: false,
     },
-    {
-      "type": "boolean",
-      "name": "isReceived",
-      "title": "Is Received",
-      "initialValue": false
-    }
   ],
-  "preview": {
-    "select": {
-      "title": "sku.id",
-      "subtitle": "quantity"
-    }
-  }
-})
+  preview: {
+    select: {
+      name: "sku.spu.name",
+      size: "sku.attribute.size",
+      color: "sku.attribute.color",
+      quantity: "quantity",
+    },
+    prepare(selection, viewOptions) {
+      const { name, size, color, quantity } = selection;
+
+      return {
+        subtitle: "Order Item",
+        title: `${name} - ${size}.[${color}] * ${quantity}`,
+        name: `${name} - ${size}.[${color}] * ${quantity}`,
+      };
+    },
+  },
+});
