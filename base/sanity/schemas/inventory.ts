@@ -39,12 +39,6 @@ export default defineType({
     },
     {
       type: "number",
-      name: "quantity",
-      title: "Quantity",
-      validation: (Rule) => Rule.required(),
-    },
-    {
-      type: "number",
       name: "preQuantity",
       title: "Pre Quantity",
       description: "预购（计划）库存",
