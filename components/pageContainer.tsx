@@ -15,7 +15,7 @@ const PageContainer = ({ children }: { children: React.ReactNode }) => {
   //   }
   // }, [status]);
 
-  console.log(data, " user");
+  // console.log(data, " user");
   return (
     <main className="App w-screen h-screen flex flex-col">
       {/* Header */}

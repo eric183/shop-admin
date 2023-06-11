@@ -47,19 +47,28 @@ export default defineType({
       type: "number",
       name: "preQuantity",
       title: "Pre Quantity",
-      readOnly: true,
-    },
-    {
-      type: "number",
-      name: "remainQuantity",
-      title: "Remain Quantity",
-      readOnly: true,
+      description: "预购（计划）库存",
+      options: {
+        default: 0,
+      },
     },
     {
       type: "number",
       name: "actualQuantity",
       title: "Actual Quantity",
-      readOnly: true,
+      description: "实际入库库存 = 有效订单 sku  + 剩余库存",
+      options: {
+        default: 0,
+      },
+    },
+    {
+      type: "number",
+      name: "remainQuantity",
+      title: "Remain Quantity",
+      description: "剩余库存 = 实际入库库存 - 有效订单 sku",
+      options: {
+        default: 0,
+      },
     },
   ],
   preview: {

@@ -56,11 +56,14 @@ export default defineType({
       of: [
         {
           type: "reference",
+          weak: false,
           to: [
             {
               type: "sku",
             },
           ],
+
+          // inverse: "spu",
         },
       ],
     },

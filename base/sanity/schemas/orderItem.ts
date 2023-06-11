@@ -9,25 +9,31 @@ export default defineType({
       name: "sku",
       title: "Order Sku",
       type: "reference",
+      description: "订单商品",
       to: [{ type: "sku" }],
     },
     {
       type: "number",
       name: "quantity",
       title: "Quantity",
+      description: "数量",
       validation: (Rule) => Rule.required(),
     },
     {
       type: "number",
-      name: "prePrice",
-      title: "Pre Price",
+      name: "preOrderPrice",
+      title: "Pre Order Price",
       initialValue: 0,
+      description: "预订价格",
     },
+
+    // 该用户订购商品是否买到
     {
       type: "boolean",
-      name: "isReceived",
-      title: "Is Received",
+      name: "isProductionPurchased",
+      title: "Is Purchased",
       initialValue: false,
+      description: "该用户订购商品是否买到",
     },
   ],
   preview: {

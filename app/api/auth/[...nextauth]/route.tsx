@@ -10,6 +10,7 @@ export const authOptions: NextAuthOptions = {
   // Configure one or more authentication providers
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
   },
   providers: [
     // EmailProvider({

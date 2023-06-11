@@ -32,6 +32,7 @@ export default defineType({
       title: "Role",
       validation: (Rule) => Rule.required(),
       options: {
+        defaultValue: "GUEST",
         list: [
           {
             title: "Admin",

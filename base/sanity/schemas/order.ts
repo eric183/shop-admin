@@ -39,92 +39,11 @@ export default defineType({
           to: [
             {
               type: "orderItem",
-              // preview: {
-              //   select: {
-              //     title: "sku",
-              //     quantity: "quantity",
-              //   },
-              //   prepare(value, viewOptions) {
-              //     const { title, quantity } = value;
-              //     return {
-              //       title: `${title} (${quantity})`,
-              //     };
-              //   },
-              // },
             },
           ],
         },
       ],
     },
-    // {
-    //   type: "array",
-    //   name: "orderItems",
-    //   title: "Order Items",
-
-    //   of: [
-    //     {
-    //       type: "reference",
-    //       to: [
-    //         {
-    //           type: "orderItem",
-    //         },
-    //       ],
-    //     },
-    //     // {
-    //     //   type: "object",
-    //     //   name: "myObject",
-    //     //   title: "Order Item",
-    //     //   // components: {
-    //     //   //   input: MyCustomStringInput,
-    //     //   // },
-    //     //   // preview: {
-    //     //   //   select: {
-    //     //   //     // name: "sku",
-    //     //   //     title: "sku",
-    //     //   //     quantity: "quantity",
-    //     //   //     // title: "myObject.size",
-    //     //   //   },
-    //     //   //   prepare(selection) {
-    //     //   //     return {
-    //     //   //       title: selection.title,
-    //     //   //     };
-    //     //   //   },
-    //     //   // },
-    //     //   fields: [
-    //     //     {
-    //     //       type: "reference",
-    //     //       name: "sku",
-    //     //       title: "SKU",
-    //     //       weak: false,
-    //     //       validation: (Rule) => Rule.required(),
-    //     //       to: [
-    //     //         {
-    //     //           type: "sku",
-    //     //         },
-    //     //       ],
-    //     //     },
-    //     //     {
-    //     //       type: "number",
-    //     //       name: "quantity",
-    //     //       title: "Quantity",
-    //     //       validation: (Rule) => Rule.required(),
-    //     //     },
-    //     //     {
-    //     //       type: "number",
-    //     //       name: "prePrice",
-    //     //       title: "Pre Price",
-    //     //       initialValue: 0,
-    //     //     },
-    //     //     {
-    //     //       type: "boolean",
-    //     //       name: "isReceived",
-    //     //       title: "Is Received",
-    //     //       initialValue: false,
-    //     //     },
-    //     //   ],
-    //     // },
-    //   ],
-    // },
     {
       type: "array",
       name: "shipments",
@@ -144,7 +63,25 @@ export default defineType({
       type: "number",
       name: "deposit",
       title: "Deposit",
+      description: "定金",
     },
+
+    // 优惠
+    {
+      type: "number",
+      name: "discount",
+      title: "Discount",
+      initialValue: 0,
+      description: "优惠活动",
+    },
+    {
+      type: "number",
+      name: "finalPayment",
+      title: "Final Payment",
+      initialValue: 0,
+      description: "尾款",
+    },
+
     {
       type: "string",
       name: "orderStatus",
@@ -153,26 +90,32 @@ export default defineType({
       validation: (Rule) => Rule.required(),
       options: {
         list: [
+          // 未支付
           {
             title: "Unpaid",
             value: "UNPAID",
           },
+          // 定金
           {
             title: "HalfPaid",
-            value: "UNPAID",
+            value: "HALFPAID",
           },
+          // 尾款
           {
             title: "Paid",
             value: "PAID",
           },
+          // 已发货
           {
             title: "Shipped",
             value: "SHIPPED",
           },
+          // 已收货
           {
             title: "Received",
             value: "RECEIVED",
           },
+          // 已取消
           {
             title: "Cancelled",
             value: "CANCELLED",
@@ -180,11 +123,12 @@ export default defineType({
         ],
       },
     },
-    {
-      type: "number",
-      name: "finalPayment",
-      title: "Final Payment",
-      initialValue: 0,
-    },
   ],
+  preview: {
+    select: {
+      subtitle: "orderStatus",
+      title: "account.username",
+      Image: "account.avatar",
+    },
+  },
 });

@@ -10,6 +10,7 @@ export default defineType({
       type: "reference",
       name: "spu",
       title: "SPU",
+      // hidden: true,
       to: [
         {
           type: "spu",
@@ -23,21 +24,6 @@ export default defineType({
       title: "Price",
       validation: (Rule) => Rule.required(),
     }),
-    // defineField({
-    //   type: "array",
-    //   name: "Inventories",
-    //   title: "inventories",
-    //   of: [
-    //     {
-    //       type: "reference",
-    //       to: [
-    //         {
-    //           type: "inventory",
-    //         },
-    //       ],
-    //     },
-    //   ],
-    // }),
 
     defineField({
       type: "object",
@@ -75,29 +61,32 @@ export default defineType({
       ],
     }),
 
-    // defineField({
-    //   type: "reference",
-    //   name: "inventory",
-    //   title: "Inventory",
-    //   to: [
-    //     {
-    //       type: "inventory",
-    //     },
-    //   ],
-    // }),
+    defineField({
+      type: "reference",
+      name: "inventory",
+      title: "Inventory",
+      weak: true,
+
+      to: [
+        {
+          type: "inventory",
+        },
+      ],
+    }),
   ],
   preview: {
     select: {
-      name: "spu.name",
+      name: "spu.name", // <-- this is the field that will be used in the title
       size: "attribute.size",
       color: "attribute.color",
+      price: "price",
     },
     prepare(selection) {
-      const { name, size, color } = selection;
+      const { name, price, size, color } = selection;
 
       return {
-        title: `${name} - ${size}.[${color}]`,
-        name: `${name} - ${size}.[${color}]`,
+        title: `${name ? name + " - " : ""}${size} - ${color} - $${price}`,
+        name: `${name ? name + " - " : ""}${size} - ${color} - $${price}`,
       };
     },
   },
