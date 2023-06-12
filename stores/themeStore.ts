@@ -7,7 +7,7 @@ const themeStore = create<{
   toggleDarkMode: (arg: TDarkmode) => void;
 }>()((set) => {
   return {
-    darkMode: "dark",
+    darkMode: "light",
     toggleDarkMode: () =>
       set(({ darkMode }) => ({
         darkMode,

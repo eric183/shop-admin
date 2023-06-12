@@ -105,7 +105,7 @@ const ImagePreviewTool: React.FC<{ images: IProduct["imageURLs"] }> = ({
   images,
 }) => {
   const [visible, setVisible] = useState(false);
-
+  console.log(images, "...");
   return (
     <>
       <Image

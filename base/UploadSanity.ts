@@ -1,23 +1,33 @@
-import { ISanityDocument } from "../old/typings/sanity";
+import { ISanityDocument } from "~types/sanityDocument";
 
-export const SanityUploader = async (file: File): Promise<ISanityDocument> => {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
+export const SanityUploader = async (
+  fileList: File[]
+): Promise<ISanityDocument[]> => {
+  const promiseArray = fileList.map((file) => {
+    return new Promise<Promise<ISanityDocument>>((resolve) => {
+      const reader = new FileReader();
 
-    reader.readAsArrayBuffer(file);
-    reader.onloadend = async () => {
-      const arrayBuffer = reader.result;
-      const response = await fetch(import.meta.env.VITE_SANITY_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": file.type,
-          Authorization: `Bearer ${import.meta.env.VITE_SANITY_TOKEN}`,
-        },
-        body: arrayBuffer,
-      });
-      const { document } = await response.json();
+      reader.readAsArrayBuffer(file);
+      reader.onloadend = async () => {
+        const arrayBuffer = reader.result;
+        const response = await fetch(
+          process.env.NEXT_PUBLIC_SANITY_STUDIO_ASSETS_URL!,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": file.type,
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_SANITY_TOKEN}`,
+            },
+            body: arrayBuffer,
+          }
+        );
+        const { document } = await response.json();
 
-      resolve(document);
-    };
+        resolve(document);
+      };
+    });
   });
+  const res = await Promise.all(promiseArray);
+  debugger;
+  return Promise.all(promiseArray);
 };

@@ -8,8 +8,9 @@ export interface IProduct {
   brand: string;
   link: string;
   imageURLs: ImageURL[];
-  skus: Skus[];
+  skus: Sku[];
   _updatedAt: string;
+  price: number;
 }
 
 interface ImageURL {
@@ -17,14 +18,16 @@ interface ImageURL {
 }
 
 interface Asset {
+  _id: string;
+  _ref: string;
   url: string;
 }
 
-interface Skus {
-  price: number;
-  remainQuantity: number;
-  _id: string;
-  _ref: null;
+export interface Sku {
+  price?: number;
+  remainQuantity?: number;
+  _id?: string;
+  _ref?: null;
   attribute: Attribute;
 }
 

@@ -6,7 +6,7 @@ const productQuery = groq`*[_type == "spu"]{
   category,
   brand,
   link,
-  "imageURLs": images[]{asset->{url}},
+  "imageURLs": images[]{asset->{_id, _ref, url}},
   "skus": *[_type == "sku" && references(^._id)] {
     _id,
     _ref,

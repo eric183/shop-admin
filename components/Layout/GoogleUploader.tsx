@@ -4,12 +4,18 @@ import { useState, useEffect } from "react";
 import useGoogleImage from "../../hooks/useGoogleUpload";
 import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
 import { create } from "zustand";
+import { SanityUploader } from "~base/UploadSanity";
+import { ISanityDocument } from "~types/sanityDocument";
+import { IProduct } from "~types/product";
 
 interface IGoogleUploaderProps {
   uploading: boolean;
   setUpload: (uploading: boolean) => void;
-  imageUrls: UploadFile[];
-  setImageUrls: (imageUrls: UploadFile[]) => void;
+  imageUrls: UploadFile[] & IProduct["imageURLs"] & ISanityDocument[];
+  setImageUrls: (
+    imageUrls: UploadFile[] & IProduct["imageURLs"] & ISanityDocument[]
+  ) => void;
+  clearImageUrls: () => void;
 }
 
 export const useUploadingStore = create<IGoogleUploaderProps>()((set) => ({
@@ -17,13 +23,17 @@ export const useUploadingStore = create<IGoogleUploaderProps>()((set) => ({
   setUpload: (uploading) => set({ uploading }),
   imageUrls: [],
   setImageUrls: (_imageUrls) =>
-    set(({ imageUrls }) => ({
-      imageUrls: [...imageUrls, ..._imageUrls],
-    })),
+    set(({ imageUrls }) => {
+      return {
+        imageUrls: [...imageUrls, ..._imageUrls],
+      };
+    }),
+  clearImageUrls: () => set({ imageUrls: [] }),
 }));
 
 const GoogleUploader = () => {
-  const { uploading, setUpload, imageUrls, setImageUrls } = useUploadingStore();
+  const { uploading, setUpload, imageUrls, setImageUrls, clearImageUrls } =
+    useUploadingStore();
   const [loading, setLoading] = useState(false);
   // const [imageUrls, setImageUrls] = useState<UploadFile[]>();
   const [upload] = useGoogleImage();
@@ -36,8 +46,10 @@ const GoogleUploader = () => {
 
   const uploadHandler = async (fileList: RcFile[]) => {
     if (!fileList || fileList.length === 0) return;
-    const documents = await upload(fileList);
+    // const documents = await upload(fileList);
+    const documents = await SanityUploader(fileList);
     const docs = documents.map((document) => ({
+      ...document,
       url: document.url,
       name: document.name,
       uid: document.id,
@@ -45,7 +57,9 @@ const GoogleUploader = () => {
       response: '{"status": "success"}', // 服务端响应内容
     }));
 
-    setImageUrls(docs);
+    // setImages(documents);
+
+    setImageUrls(docs as any);
   };
 
   const getBase64 = (file: RcFile): Promise<string> =>
@@ -64,6 +78,11 @@ const GoogleUploader = () => {
     setPreviewImage(file.url || (file.preview as string));
   };
 
+  const onChange = ({ fileList }: any) => {
+    // debugger;
+    clearImageUrls();
+    setImageUrls(fileList);
+  };
   useEffect(() => {
     uploadHandler(uploadList);
   }, [uploadList]);
@@ -75,6 +94,7 @@ const GoogleUploader = () => {
     </div>
   );
 
+  console.log(imageUrls, "imageUrls....");
   return (
     <div>
       <Upload
@@ -85,6 +105,7 @@ const GoogleUploader = () => {
         beforeUpload={beforeUpload}
         onPreview={handlePreview}
         fileList={imageUrls}
+        onChange={onChange}
       >
         {uploadButton}
       </Upload>
