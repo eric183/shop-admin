@@ -8,7 +8,7 @@ import { useSession } from "next-auth/react";
 const MainConainer = ({ children }: { children: React.ReactNode }) => {
   const { data, status } = useSession();
 
-  return status === "authenticated" ? (
+  return status !== "authenticated" ? (
     <PageContainer>{children}</PageContainer>
   ) : (
     <AuthContainer />

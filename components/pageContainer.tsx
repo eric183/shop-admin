@@ -41,7 +41,7 @@ const PageContainer = ({ children }: { children: React.ReactNode }) => {
         </aside>
 
         {/* Content */}
-        <section className="router-enter flex-1 flex-shrink-0">
+        <section className="router-enter flex-1 flex-shrink-0 bg-white rounded-3xl shadow-md hover:shadow-2xl ease-in duration-200">
           {children}
         </section>
       </section>

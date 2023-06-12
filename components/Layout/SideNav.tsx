@@ -11,7 +11,7 @@ const SideNav = () => {
   const pathname = usePathname();
   return (
     <div className="w-full h-full">
-      <div className="mx-auto w-full h-full max-w-md rounded-2xl bg-white py-2">
+      <div className="mx-auto w-full h-full max-w-md rounded-2xl bg-white py-2 shadow-md hover:shadow-2xl ease-in duration-200">
         {RoutePaths.map((r, key) => (
           <Disclosure key={key} as="div" className={`px-2`}>
             {({ open }) => (

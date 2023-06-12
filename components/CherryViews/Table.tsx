@@ -11,6 +11,7 @@ interface Props<T extends object> {
 
 const CherryTable = <T extends object>(props: Props<T>) => {
   const { datasource, columns } = props;
+
   return (
     <div>
       <Table dataSource={datasource} columns={columns} />

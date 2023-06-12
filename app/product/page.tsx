@@ -8,18 +8,25 @@ import orderQuery from "~app/api/groqs/order";
 import productQuery from "~app/api/groqs/product";
 import productColumns from "./columns";
 import { IProduct } from "~types/product";
+import CreateButton from "./createButton";
+import { useState } from "react";
 
 const Product = async () => {
-  const response = await sanityClient.fetch(productQuery);
+  const products = await sanityClient.fetch(productQuery);
 
-  const datasource = response as IProduct[];
+  const datasource = products as IProduct[];
+
   return (
-    <>
-      <CherryTable<IProduct>
-        datasource={datasource}
-        columns={productColumns}
-      ></CherryTable>
-    </>
+    <div className="w-full h-full px-3">
+      <CreateButton datasource={datasource} />
+
+      <section>
+        <CherryTable<IProduct>
+          datasource={datasource}
+          columns={productColumns}
+        ></CherryTable>
+      </section>
+    </div>
   );
 };
 

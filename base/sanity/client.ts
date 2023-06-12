@@ -1,5 +1,6 @@
 import { createClient } from "next-sanity";
 
+console.log(process.env.SANITY_STUDIO_PROJECT_ID);
 const sanityClient = createClient({
   projectId: process.env.SANITY_STUDIO_PROJECT_ID,
   dataset: process.env.SANITY_STUDIO_DATASET,
