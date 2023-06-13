@@ -23,9 +23,9 @@ export const useUploadingStore = create<IGoogleUploaderProps>()((set) => ({
   setUpload: (uploading) => set({ uploading }),
   imageUrls: [],
   setImageUrls: (_imageUrls) =>
-    set(({ imageUrls }) => {
+    set(() => {
       return {
-        imageUrls: [...imageUrls, ..._imageUrls],
+        imageUrls: _imageUrls,
       };
     }),
   clearImageUrls: () => set({ imageUrls: [] }),
@@ -48,6 +48,7 @@ const GoogleUploader = () => {
     if (!fileList || fileList.length === 0) return;
     // const documents = await upload(fileList);
     const documents = await SanityUploader(fileList);
+
     const docs = documents.map((document) => ({
       ...document,
       url: document.url,
@@ -57,10 +58,11 @@ const GoogleUploader = () => {
       response: '{"status": "success"}', // 服务端响应内容
     }));
 
-    clearImageUrls();
-    // setImages(documents);
+    // const imagesLength = docs.length;
 
-    setImageUrls(docs as any);
+    // imageUrls.splice(-imagesLength);
+
+    setImageUrls([...imageUrls, ...docs] as any);
   };
 
   const getBase64 = (file: RcFile): Promise<string> =>
@@ -82,7 +84,7 @@ const GoogleUploader = () => {
   const onChange = ({ fileList }: any) => {
     // debugger;
     clearImageUrls();
-    setImageUrls(fileList);
+    setImageUrls(fileList.filter((f: ISanityDocument) => f._id));
   };
   useEffect(() => {
     uploadHandler(uploadList);

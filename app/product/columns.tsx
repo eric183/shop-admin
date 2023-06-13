@@ -46,7 +46,7 @@ const useColumns = () => {
       },
     },
     {
-      title: "商品规格 / 剩余 ",
+      title: "商品规格 / 价格 ",
       dataIndex: "skus",
       key: "skus",
       render(skus: IProduct["skus"], record, index) {
@@ -56,8 +56,7 @@ const useColumns = () => {
               return (
                 <li key={index}>
                   [{sku.attribute.color.toLocaleLowerCase()} -{" "}
-                  {sku.attribute.size.toLocaleUpperCase()}] /{" "}
-                  {sku.remainQuantity}件
+                  {sku.attribute.size.toLocaleUpperCase()}] / ${sku.price}
                 </li>
               );
             })}

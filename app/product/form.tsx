@@ -184,7 +184,7 @@ const ProductForm = ({ datasource }) => {
         };
       }
     );
-    debugger;
+
     if (!matchSPU) {
       const { results } = await sanityMutationClient({
         mutations: [
@@ -212,6 +212,19 @@ const ProductForm = ({ datasource }) => {
       ? [..._matchSPU.skus, ...skusResults]
       : skusResults;
 
+    const data =
+      skusResults.length > 0
+        ? {
+            skus: _skus.map(({ _id }: any) => {
+              return {
+                _type: "reference",
+                _key: uuidv4().split("-")[0],
+                _ref: _id,
+              };
+            }),
+          }
+        : {};
+
     await sanityMutationClient({
       mutations: [
         {
@@ -223,32 +236,10 @@ const ProductForm = ({ datasource }) => {
               brand,
               link,
               images: imagesCreations,
-              skus: _skus.map(({ _id }: any) => {
-                return {
-                  _type: "reference",
-                  _key: uuidv4().split("-")[0],
-                  _ref: _id,
-                };
-              }),
+              ...data,
             },
           },
         },
-        // {
-        //   patch: {
-        //     id: matchSPUId,
-        //     set: {
-        //       name,
-        //       category,
-        //       brand,
-        //       link,
-        //       images: imagesCreations,
-        //     },
-        //   },
-        // },
-        // ...(skuCreations(matchSPUId) as any),
-        // ...(skuCreations as any),
-
-        // ...imagesCreations,
       ],
     });
 
@@ -263,6 +254,7 @@ const ProductForm = ({ datasource }) => {
   const skuCreations = async (matchSPUId: string) => {
     const { skus } = formData;
 
+    if (skus!.length === 0) return [];
     const { results } = await sanityMutationClient({
       mutations: skus?.map(({ attribute, price }) => {
         return {
