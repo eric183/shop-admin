@@ -7,12 +7,8 @@ const sanityDataset = process.env.NEXT_PUBLIC_SANITY_DATASET;
 const sanityURL = process.env.NEXT_PUBLIC_SANITY_STUDIO_URL;
 
 const sanityClient = createClient({
-  projectId: process.env.SANITY_STUDIO_PROJECT_ID
-    ? process.env.SANITY_STUDIO_PROJECT_ID
-    : sanityProjectID,
-  dataset: process.env.SANITY_STUDIO_DATASET
-    ? process.env.SANITY_STUDIO_DATASET
-    : sanityDataset,
+  projectId: sanityProjectID,
+  dataset: sanityDataset,
   apiVersion: "2021-10-21",
   useCdn: process.env.NODE_ENV !== "production",
 });

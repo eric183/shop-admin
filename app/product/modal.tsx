@@ -3,60 +3,48 @@
 import { Modal } from "antd";
 
 import { useState } from "react";
-import sanityClient from "~base/sanity/client";
+import { create } from "zustand";
+import { sanityClient } from "~base/sanity/client";
+
+export const modalStore = create<{
+  open: boolean;
+  setOpen: (arg: boolean) => void;
+  title: string;
+  setTitle: (arg: string) => void;
+  confirmLoading: boolean;
+  setConfirmLoading: (arg: boolean) => void;
+  record: any;
+  setRecord: (arg: any) => void;
+}>()((set) => ({
+  open: false,
+  setOpen: (arg: boolean) => set({ open: arg }),
+  title: "",
+  setTitle: (arg: string) => set({ title: arg }),
+  confirmLoading: false,
+  setConfirmLoading: (arg: boolean) => set({ confirmLoading: arg }),
+  record: {},
+  setRecord: (arg: any) => set({ record: arg }),
+}));
 
 interface IProductModal {
-  open: boolean;
-  title: string;
-  confirmLoading: boolean;
-  children: React.ReactNode;
-  setOpen: (arg: boolean) => void;
-  setConfirmLoading: (arg: boolean) => void;
+  [key: string]: any;
 }
 
-const ProductModal: React.FC<IProductModal> = ({
-  setOpen,
-  open,
-  title,
-  confirmLoading,
-  setConfirmLoading,
-  children,
-}) => {
-  const [modalText, setModalText] = useState<string>("Content of the modal");
-
-  const handleOk = async () => {
-    // setModalText("The modal will be closed after two seconds");
-    setConfirmLoading(true);
-
-    // const document = await sanityClient.fetch(
-    //   `*[_type == "spu" && name === $name]{_id}`,
-    //   { name }
-    // );
-    // document.sanityClient.createIfNotExists({
-    //   _type: document._id,
-    // });
-
-    setTimeout(() => {
-      setOpen(false);
-      setConfirmLoading(false);
-    }, 2000);
-  };
-
+const ProductModal: React.FC<IProductModal> = ({ children }) => {
+  const { open, setOpen, title, confirmLoading } = modalStore();
   const handleCancel = () => {
     setOpen(false);
   };
+  console.log(open, "isopen");
   return (
     <Modal
       title={title}
       width={800}
       open={open}
-      onOk={handleOk}
       confirmLoading={confirmLoading}
       onCancel={handleCancel}
       footer={null}
     >
-      {/* <p>{modalText}</p> */}
-
       {children}
     </Modal>
   );

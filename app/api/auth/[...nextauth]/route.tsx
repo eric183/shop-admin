@@ -3,7 +3,7 @@ import GithubProvider from "next-auth/providers/github";
 import EmailProvider from "next-auth/providers/email";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { sendVerificationRequest } from "../../../../utils/helpers/mailRequest";
-import sanityClient from "~base/sanity/client";
+import { sanityClient } from "~base/sanity/client";
 import authGROQ from "~app/api/groqs/auth";
 
 export const authOptions: NextAuthOptions = {

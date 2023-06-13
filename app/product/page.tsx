@@ -1,31 +1,18 @@
-import { Space, Table, Tag } from "antd";
-import type { ColumnsType } from "antd/es/table";
-import { toYMD, toYMD_Short } from "../../base/Timeformat";
 import { useQuery } from "@tanstack/react-query";
 import { sanityClient } from "~base/sanity/client";
-import CherryTable from "~components/CherryViews/Table";
-import orderQuery from "~app/api/groqs/order";
 import productQuery from "~app/api/groqs/product";
-import productColumns from "./columns";
-import { IProduct } from "~types/product";
-import CreateButton from "./createButton";
-import { useState } from "react";
+import Root from "./root";
 
 const Product = async () => {
-  const products = await sanityClient.fetch(productQuery);
-
-  const datasource = products as IProduct[];
-
+  const response = sanityClient.fetch(productQuery, {
+    start: 0,
+    limit: 5,
+    // start: 0,
+  });
   return (
     <div className="w-full h-full px-3">
-      <CreateButton datasource={datasource} />
-
-      <section>
-        <CherryTable<IProduct>
-          datasource={datasource}
-          columns={productColumns}
-        ></CherryTable>
-      </section>
+      <Root response={response} />
+      {/* <CreateButton datasource={data} /> */}
     </div>
   );
 };

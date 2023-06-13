@@ -1,6 +1,6 @@
 import { groq } from "next-sanity";
 
-const productQuery = groq`*[_type == "spu"]{
+const productQuery = groq`*[_type == "spu"][$start... $limit]{
   _id,
   name,
   category,
