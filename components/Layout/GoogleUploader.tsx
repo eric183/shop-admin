@@ -57,6 +57,7 @@ const GoogleUploader = () => {
       response: '{"status": "success"}', // 服务端响应内容
     }));
 
+    clearImageUrls();
     // setImages(documents);
 
     setImageUrls(docs as any);
@@ -89,7 +90,11 @@ const GoogleUploader = () => {
 
   const uploadButton = (
     <div>
-      {loading ? <LoadingOutlined /> : <PlusOutlined />}
+      {loading ? (
+        <LoadingOutlined rev={undefined} />
+      ) : (
+        <PlusOutlined rev={undefined} />
+      )}
       <div style={{ marginTop: 8 }}>上传</div>
     </div>
   );

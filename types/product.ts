@@ -14,6 +14,7 @@ export interface IProduct {
 }
 
 interface ImageURL {
+  _id?: string;
   asset: Asset;
 }
 

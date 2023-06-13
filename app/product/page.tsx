@@ -2,7 +2,7 @@ import { Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { toYMD, toYMD_Short } from "../../base/Timeformat";
 import { useQuery } from "@tanstack/react-query";
-import sanityClient from "~base/sanity/client";
+import { sanityClient } from "~base/sanity/client";
 import CherryTable from "~components/CherryViews/Table";
 import orderQuery from "~app/api/groqs/order";
 import productQuery from "~app/api/groqs/product";

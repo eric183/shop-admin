@@ -27,7 +27,5 @@ export const SanityUploader = async (
       };
     });
   });
-  const res = await Promise.all(promiseArray);
-  debugger;
   return Promise.all(promiseArray);
 };

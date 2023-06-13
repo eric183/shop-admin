@@ -8,7 +8,7 @@ import { IProduct, Sku } from "~types/product";
 import clsx from "clsx";
 import { MinusCircleIcon, PlusCircleIcon } from "@heroicons/react/20/solid";
 import { v4 as uuidv4 } from "uuid";
-import sanityClient from "~base/sanity/client";
+import { sanityClient, sanityMutationClient } from "~base/sanity/client";
 import { SanityUploader } from "~base/UploadSanity";
 import GoogleUploader, {
   useUploadingStore,
@@ -17,9 +17,6 @@ import GoogleUploader, {
 const CreateButton: React.FC<{
   datasource: IProduct[];
 }> = ({ datasource }) => {
-  const sanityToken = process.env.NEXT_PUBLIC_SANITY_TOKEN;
-  const sanityProjectID = process.env.NEXT_PUBLIC_SANITY_STUDIO_PROJECT_ID;
-
   const [matchSPU, setMatchSPU] = useState<IProduct>(null!);
   const [open, setOpen] = useState<boolean>(false);
   const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
@@ -45,11 +42,11 @@ const CreateButton: React.FC<{
     if (foundItem) {
       setMatchSPU(foundItem);
       const currentImages = foundItem?.imageURLs.map((i) => i.asset) as any;
+      clearImageUrls();
 
       setImageUrls(currentImages);
       // setImages(currentImages);
     } else {
-      clearImageUrls();
       // setImages(currentImages);
       setMatchSPU(null!);
     }
@@ -171,26 +168,8 @@ const CreateButton: React.FC<{
 
     const { name, category, brand, link, skus } = formData;
     const matchSPUId = matchSPU ? matchSPU._id : uuidv4();
-    const skuCreations = skus?.map(({ attribute, price }) => {
-      return {
-        create: {
-          _type: "sku",
-          spu: {
-            _type: "spu",
-            _ref: matchSPUId,
-          },
-          price,
-          attribute: {
-            color: attribute?.color,
-            size: attribute?.size,
-          },
-        },
-      };
-    });
-
     const imagesCreations = (imageUrls as IProduct["imageURLs"]).map(
       (image) => {
-        debugger;
         return {
           _type: "image",
           _key: uuidv4().split("-")[0],
@@ -202,79 +181,105 @@ const CreateButton: React.FC<{
       }
     );
 
-    const data = {
-      mutations: [
-        {
-          patch: {
-            id: matchSPUId,
-            // _type: "spu",
-            set: {
-              name,
-              category,
-              brand,
-              link,
-              // images: imagesCreations,
-              images: imagesCreations,
-
-              // images.map((i) => {
-              //   return {
-              //     asset: {
-              //       _type: "reference",
-              //       _ref: i._id,
-              //       // _key: uuidv4(),
-              //     },
-              //   };
-              // })
+    const skuCreations = {
+      mutations: skus?.map(({ attribute, price }) => {
+        return {
+          create: {
+            _type: "sku",
+            spu: {
+              _type: "spu",
+              _ref: matchSPUId,
+            },
+            price,
+            attribute: {
+              color: attribute?.color,
+              size: attribute?.size,
             },
           },
-        },
+        };
+      }),
+    };
+
+    const spuCreations = {
+      mutations: [
+        matchSPU && matchSPU._id
+          ? {
+              patch: {
+                id: matchSPUId,
+                // _type: "spu",
+                set: {
+                  name,
+                  category,
+                  brand,
+                  link,
+                  images: imagesCreations,
+
+                  // images.map((i) => {
+                  //   return {
+                  //     asset: {
+                  //       _type: "reference",
+                  //       _ref: i._id,
+                  //       // _key: uuidv4(),
+                  //     },
+                  //   };
+                  // })
+                },
+              },
+            }
+          : {
+              create: {
+                _type: "spu",
+                _id: matchSPUId,
+                name,
+                category,
+                brand,
+                link,
+                // images: imagesCreations,
+                images: imagesCreations,
+              },
+            },
         // ...(skuCreations as any),
+
         // ...imagesCreations,
       ],
     };
-    // here go set a fetch request to sanity.io
 
     setConfirmLoading(true);
 
-    const response = await fetch(
-      process.env.NEXT_PUBLIC_SANITY_STUDIO_URL!,
-      // "https://<project-id>.api.sanity.io/v2021-06-07/data/mutate/<dataset-name>",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${sanityToken}`,
-          "Content-Type": "application/json",
+    await formPost(skuCreations, spuCreations, imagesCreations);
+
+    // here go set a fetch request to sanity.io
+  };
+
+  const formPost = async (skuForm: any, spuForm: any, imageForm: any) => {
+    const result = await sanityMutationClient(skuForm);
+
+    debugger;
+
+    setConfirmLoading(false);
+    setOpen(false);
+    clearForm();
+    return {};
+  };
+
+  const clearForm = async () => {
+    setFormData({
+      name: "",
+      category: "",
+      brand: "",
+      link: "",
+      skus: [
+        {
+          price: 0,
+          attribute: {
+            color: "",
+            size: "",
+          },
         },
-        body: JSON.stringify(data),
-      }
-    ).catch((error) => {
-      console.log(error.message);
+      ],
     });
-
-    // const data = {
-    //   mutations: [
-    //     {
-    //       patch: {
-    //         id: matchSPUId,
-    //         // _type: "spu",
-    //         set: {
-    //           name,
-    //           category,
-    //           brand,
-    //           link,
-    //           images: imagesCreations
-    //         },
-    //       },
-    //     },
-    //     ...(skuCreations as any),
-    //     ...imagesCreations,
-    //   ],
-    // };
-
-    setTimeout(() => {
-      setConfirmLoading(false);
-      setOpen(false);
-    }, 1200);
+    setImageUrls([]);
+    setMatchSPU(null!);
   };
 
   return (

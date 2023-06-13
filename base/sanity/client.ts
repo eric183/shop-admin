@@ -1,11 +1,40 @@
 import { createClient } from "next-sanity";
+import { resolve } from "path";
 
-console.log(process.env.SANITY_STUDIO_PROJECT_ID);
+const sanityToken = process.env.NEXT_PUBLIC_SANITY_TOKEN;
+const sanityProjectID = process.env.NEXT_PUBLIC_SANITY_STUDIO_PROJECT_ID;
+const sanityDataset = process.env.NEXT_PUBLIC_SANITY_DATASET;
+const sanityURL = process.env.NEXT_PUBLIC_SANITY_STUDIO_URL;
+
 const sanityClient = createClient({
-  projectId: process.env.SANITY_STUDIO_PROJECT_ID,
-  dataset: process.env.SANITY_STUDIO_DATASET,
+  projectId: process.env.SANITY_STUDIO_PROJECT_ID
+    ? process.env.SANITY_STUDIO_PROJECT_ID
+    : sanityProjectID,
+  dataset: process.env.SANITY_STUDIO_DATASET
+    ? process.env.SANITY_STUDIO_DATASET
+    : sanityDataset,
   apiVersion: "2021-10-21",
   useCdn: process.env.NODE_ENV !== "production",
 });
 
-export default sanityClient;
+const sanityMutationClient = async (data: any) => {
+  const response = await fetch(
+    `${sanityURL}/?returnIds=true&returnDocuments=true`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${sanityToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    }
+  ).catch((error) => {
+    resolve(error.message);
+    console.log(error.message);
+  });
+
+  if (!response) return;
+  return await response.json();
+};
+
+export { sanityMutationClient, sanityClient };

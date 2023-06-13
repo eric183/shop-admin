@@ -47,7 +47,7 @@ export default defineType({
       type: "string",
       name: "brand",
       title: "Brand",
-      validation: (Rule) => Rule.required(),
+      // validation: (Rule) => Rule.required(),
     },
     {
       type: "array",

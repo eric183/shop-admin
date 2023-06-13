@@ -4,6 +4,8 @@ export interface ISanityDocument {
   _rev: string;
   _type: string;
   _updatedAt: string;
+  name?: string;
+  id?: string;
   assetId: string;
   extension: string;
   metadata: Metadata;

@@ -112,7 +112,7 @@ const ImagePreviewTool: React.FC<{ images: IProduct["imageURLs"] }> = ({
         preview={{ visible: false }}
         width={50}
         alt="Preview Image"
-        src={images[0].asset.url}
+        src={images[0]?.asset?.url}
         onClick={() => setVisible(true)}
       />
       <div style={{ display: "none" }}>
@@ -120,7 +120,7 @@ const ImagePreviewTool: React.FC<{ images: IProduct["imageURLs"] }> = ({
           preview={{ visible, onVisibleChange: (vis) => setVisible(vis) }}
         >
           {images?.map((image, index) => (
-            <Image src={image.asset.url} key={index} alt="previewer" />
+            <Image src={image?.asset?.url} key={index} alt="previewer" />
           ))}
         </Image.PreviewGroup>
       </div>
