@@ -13,9 +13,11 @@ import { Select } from "antd";
 import { MinusCircleIcon, PlusCircleIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";
 import ProductForm from "./form";
+import { IOrder } from "~types/order";
+import OrderForm from "./form";
 
 const Root: React.FC<{
-  response: IProduct[];
+  response: Promise<IOrder>;
 }> = ({ response }) => {
   const [teststate, setTeststate] = useState("test");
   const { data, status } = useQuery({
@@ -26,16 +28,16 @@ const Root: React.FC<{
   if (status !== "success") return null;
   return (
     <>
-      <CreateButton datasource={data} />
+      <CreateButton<IOrder> datasource={data} />
 
       <ProductModal>
-        <ProductForm<IProduct[]> datasource={data} />
+        <OrderForm<IOrder> datasource={data} />
       </ProductModal>
       <section>
-        <CherryTable<IProduct>
+        {/* <CherryTable<IOrder>
           datasource={data}
-          columns={column as ColumnsType<IProduct>}
-        ></CherryTable>
+          columns={column as ColumnsType<IOrder>}
+        ></CherryTable> */}
       </section>
     </>
   );

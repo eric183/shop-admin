@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { sanityClient } from "~base/sanity/client";
 import productQuery from "~app/api/groqs/product";
 import Root from "./root";

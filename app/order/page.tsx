@@ -1,25 +1,19 @@
-import { Space, Table, Tag } from "antd";
-import type { ColumnsType } from "antd/es/table";
-import { toYMD, toYMD_Short } from "../../base/Timeformat";
-import { useQuery } from "@tanstack/react-query";
 import { sanityClient } from "~base/sanity/client";
-import CherryTable from "~components/CherryViews/Table";
+import Root from "./root";
 import orderQuery from "~app/api/groqs/order";
-import orderColumns from "./columns";
 import { IOrder } from "~types/order";
 
 const Order = async () => {
-  const response = await sanityClient.fetch(orderQuery);
-
-  console.log(JSON.stringify(response));
-  const datasource = response as IOrder[];
+  const response = sanityClient.fetch<IOrder>(orderQuery, {
+    start: 0,
+    limit: 5,
+    // start: 0,
+  });
   return (
-    <>
-      <CherryTable<IOrder>
-        datasource={datasource}
-        columns={orderColumns}
-      ></CherryTable>
-    </>
+    <div className="w-full h-full px-3">
+      <Root response={response} />
+      {/* <CreateButton datasource={data} /> */}
+    </div>
   );
 };
 

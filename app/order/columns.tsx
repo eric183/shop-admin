@@ -2,76 +2,138 @@
 
 import type { ColumnsType } from "antd/es/table";
 import Link from "next/link";
-import { IOrder } from "~types/cherryVision";
+import { IOrder } from "~types/order";
+import { Button, Image } from "antd";
+import { useState } from "react";
+import { modalStore } from "../../components/Layout/Modal";
 
-const orderColumns: ColumnsType<IOrder> = [
-  {
-    title: "接龙号",
-    dataIndex: "sortNumber",
-    key: "sortNumber",
-    render: (text) => {
-      return <span>{text}</span>;
-    },
-  },
-  {
-    title: "预订人",
-    dataIndex: "username",
-    key: "username",
-  },
-  {
-    title: "购买商品列表",
-    dataIndex: "orderItems",
-    key: "orderItems",
-    render(orderItems: IOrder["orderItems"], record, index) {
-      return (
-        <ul>
-          {orderItems.map(({ sku, quantity }, index) => {
-            return (
-              <li key={index}>
-                <Link href={`/product?spu=${sku.spu.name}`} target="_blank">
-                  {`${sku.spu.name} - ${sku.color} - ${sku.size} * ${quantity}`}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      );
-    },
-  },
-  {
-    title: "定金",
-    dataIndex: "deposit",
-    key: "deposit",
-  },
-  {
-    title: "优惠活动",
-    dataIndex: "discount",
-    key: "discount",
-  },
-  {
-    title: "尾款",
-    dataIndex: "finalPayment",
-    key: "finalPayment",
-  },
-  {
-    title: "订单状态",
-    dataIndex: "orderStatus",
-    key: "orderStatus",
-  },
-  {
-    title: "快递详情",
-    dataIndex: "shipments",
-    key: "shipments",
-    render(shipments: IOrder["shipments"], record, index) {
-      return (
-        <>
-          {shipments.map((item, index) => (
-            <p key={index}>{item.carrier}</p>
-          ))}
-        </>
-      );
-    },
-  },
-];
+const useColumns = () => {
+  // const [record, setEditRecord] = useState<IOrder | null>(null);
+  const { setOpen, setRecord, setModalType } = modalStore();
+  const columns: ColumnsType<IOrder> = [
+    // {
+    //   title: "商品图片",
+    //   dataIndex: "imageURLs",
+    //   key: "imageURLs",
+    //   render(images: IOrder["imageURLs"], record, index) {
+    //     return (
+    //       <ImagePreviewTool images={images} />
 
-export default orderColumns;
+    //       // <ul className="flex flex-row">
+    //       //   {images?.map((image, index) => {
+    //       //     return (
+    //       //       <li className="w-8 h8" key={index}>
+    //       //         <Image width={32} height={32} src={image.asset.url} alt="" />
+    //       //       </li>
+    //       //     );
+    //       //   })}
+    //       // </ul>
+    //     );
+    //   },
+    // },
+    {
+      title: "品牌",
+      dataIndex: "brand",
+      key: "brand",
+    },
+    {
+      title: "商品名",
+      dataIndex: "name",
+      key: "name",
+      render: (text, record) => {
+        return text;
+      },
+    },
+    // {
+    //   title: "商品规格 / 价格 ",
+    //   dataIndex: "skus",
+    //   key: "skus",
+    //   render(skus: IOrder["skus"], record, index) {
+    //     return (
+    //       <ul>
+    //         {skus.map((sku, index) => {
+    //           return (
+    //             <li key={index}>
+    //               [{sku.attribute.color.toLocaleLowerCase()} -{" "}
+    //               {sku.attribute.size.toLocaleUpperCase()}] / ${sku.price}
+    //             </li>
+    //           );
+    //         })}
+    //       </ul>
+    //     );
+    //   },
+    // },
+    {
+      title: "链接",
+      dataIndex: "link",
+      key: "link",
+      render: (text, record) => {
+        return (
+          <p className="w-60 overflow-hidden whitespace-nowrap">
+            <Link
+              href={text}
+              target="_blank"
+              className="inline-block truncat text-ellipsis "
+            >
+              {text}
+            </Link>
+          </p>
+        );
+      },
+    },
+    {
+      title: "操作",
+      dataIndex: "operation",
+      key: "operation",
+      render: (text, record) => {
+        return (
+          <div>
+            <Button
+              // type="link"
+              onClick={() => {
+                setRecord(record);
+                setOpen(true);
+                setModalType("update");
+              }}
+              className="text-blue-900"
+            >
+              编辑
+            </Button>
+          </div>
+        );
+      },
+    },
+  ];
+
+  return [columns];
+};
+
+// const ImagePreviewTool: React.FC<{ images: IOrder["imageURLs"] }> = ({
+//   images,
+// }) => {
+//   const [visible, setVisible] = useState(false);
+//   return (
+//     <>
+//       {images && (
+//         <Image
+//           preview={{ visible: false }}
+//           width={50}
+//           alt="Preview Image"
+//           src={images[0]?.asset?.url}
+//           onClick={() => setVisible(true)}
+//         />
+//       )}
+//       {/* <div style={{ display: "none" }}>
+//         <Image.PreviewGroup
+//           preview={{ visible, onVisibleChange: (vis) => setVisible(vis) }}
+//         >
+//           {images?.map((image, index) => (
+//             <Image src={image?.asset?.url} key={index} alt="previewer" />
+//           ))}
+//         </Image.PreviewGroup>
+//       </div> */}
+//     </>
+//   );
+// };
+
+export default useColumns;

@@ -6,11 +6,11 @@ import { IOrder } from "~types/order";
 import { IProduct } from "~types/product";
 import { Button, Image } from "antd";
 import { useState } from "react";
-import { modalStore } from "./modal";
+import { modalStore } from "../../components/Layout/Modal";
 
 const useColumns = () => {
   // const [record, setEditRecord] = useState<IProduct | null>(null);
-  const { setOpen, setRecord } = modalStore();
+  const { setOpen, setRecord, setModalType } = modalStore();
   const columns: ColumnsType<IProduct> = [
     {
       title: "商品图片",
@@ -94,6 +94,7 @@ const useColumns = () => {
               onClick={() => {
                 setRecord(record);
                 setOpen(true);
+                setModalType("update");
               }}
               className="text-blue-900"
             >

@@ -15,16 +15,8 @@ import { IProduct, Sku } from "~types/product";
 interface Props<T extends object> {
   datasource: T;
 }
-// const ProductForm: React.FC<{
-//   datasource: IProduct[];
-// }> = ({ datasource }) => {
-const ProductForm = <
-  T extends {
-    id?: string;
-  }
->({
-  datasource,
-}: Props<T>) => {
+
+const OrderForm = <T extends object>({ datasource }: Props<T>) => {
   const { setModalType, modalType } = modalStore();
   const [matchSPU, setMatchSPU] = useState<IProduct>(null!);
   const { clearImageUrls, imageUrls, setImageUrls } = useUploadingStore();
@@ -51,7 +43,6 @@ const ProductForm = <
 
   const spu = datasource;
 
-  datasource;
   const defaultNameInit = (evt: string[]) => {
     const name = evt[0];
     const foundItem = spu.find((item: IProduct) => item.name === name);
@@ -543,4 +534,4 @@ const ProductForm = <
   );
 };
 
-export default ProductForm;
+export default OrderForm;

@@ -2,11 +2,13 @@
 
 import { GradientButton } from "~components/Buttons";
 import { modalStore } from "../../components/Layout/Modal";
-import { IProduct } from "~types/product";
+import { T } from "../../dist/static/sanity-2cca04c1";
 
-const CreateButton: React.FC<{
-  datasource: IProduct[];
-}> = ({ datasource }) => {
+interface Props<T> {
+  datasource: T;
+}
+
+const CreateButton = <T extends object>({ datasource }: Props<T>) => {
   const { setOpen, setModalType } = modalStore();
   return (
     <section className="flex justify-end mt-5 mr-5">

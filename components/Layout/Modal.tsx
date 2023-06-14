@@ -2,9 +2,7 @@
 
 import { Modal } from "antd";
 
-import { useState } from "react";
 import { create } from "zustand";
-import { sanityClient } from "~base/sanity/client";
 
 export const modalStore = create<{
   open: boolean;
@@ -15,6 +13,8 @@ export const modalStore = create<{
   setConfirmLoading: (arg: boolean) => void;
   record: any;
   setRecord: (arg: any) => void;
+  modalType: "create" | "update";
+  setModalType: (arg: "create" | "update") => void;
 }>()((set) => ({
   open: false,
   setOpen: (arg: boolean) => set({ open: arg }),
@@ -24,13 +24,15 @@ export const modalStore = create<{
   setConfirmLoading: (arg: boolean) => set({ confirmLoading: arg }),
   record: {},
   setRecord: (arg: any) => set({ record: arg }),
+  modalType: "create",
+  setModalType: (arg: "create" | "update") => set({ modalType: arg }),
 }));
 
-interface IProductModal {
+interface ICherryVisionModal {
   [key: string]: any;
 }
 
-const ProductModal: React.FC<IProductModal> = ({ children }) => {
+const CherryVisionModal: React.FC<ICherryVisionModal> = ({ children }) => {
   const { open, setOpen, title, confirmLoading } = modalStore();
   const handleCancel = () => {
     setOpen(false);
@@ -50,4 +52,4 @@ const ProductModal: React.FC<IProductModal> = ({ children }) => {
   );
 };
 
-export default ProductModal;
+export default CherryVisionModal;
