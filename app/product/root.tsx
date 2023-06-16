@@ -24,12 +24,14 @@ const Root: React.FC<{
   });
   const [column] = useColumns();
   if (status !== "success") return null;
+
+  console.log(data, "product");
   return (
     <>
       <CreateButton datasource={data} />
 
       <ProductModal>
-        <ProductForm<IProduct[]> datasource={data} />
+        <ProductForm datasource={data} />
       </ProductModal>
       <section>
         <CherryTable<IProduct>

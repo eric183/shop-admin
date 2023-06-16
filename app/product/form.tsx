@@ -8,23 +8,27 @@ import GoogleUploader, {
   useUploadingStore,
 } from "~components/Layout/GoogleUploader";
 import { modalStore } from "../../components/Layout/Modal";
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { sanityMutationClient } from "~base/sanity/client";
 import { IProduct, Sku } from "~types/product";
+import {
+  createInventory,
+  createSkus,
+  createSpu,
+  createSpuImages,
+  deleteInventory,
+  // updateInventory,
+  updateSkus,
+  updateSpu,
+} from "~app/api/sanityRest/product";
 
-interface Props<T extends object> {
-  datasource: T;
+interface Props {
+  datasource: IProduct[];
 }
 // const ProductForm: React.FC<{
 //   datasource: IProduct[];
 // }> = ({ datasource }) => {
-const ProductForm = <
-  T extends {
-    id?: string;
-  }
->({
-  datasource,
-}: Props<T>) => {
+const ProductForm: React.FC<Props> = ({ datasource }) => {
   const { setModalType, modalType } = modalStore();
   const [matchSPU, setMatchSPU] = useState<IProduct>(null!);
   const { clearImageUrls, imageUrls, setImageUrls } = useUploadingStore();
@@ -51,10 +55,10 @@ const ProductForm = <
 
   const spu = datasource;
 
-  datasource;
   const defaultNameInit = (evt: string[]) => {
     const name = evt[0];
     const foundItem = spu.find((item: IProduct) => item.name === name);
+
     if (foundItem) {
       setMatchSPU(foundItem);
       const currentImages = foundItem?.imageURLs.map(
@@ -181,13 +185,17 @@ const ProductForm = <
   };
 
   const formSubitHandler = async (evt: any) => {
+    if (confirmLoading) return;
     evt.preventDefault();
     setConfirmLoading(true);
 
-    if (confirmLoading) return;
+    const { skus } = formData;
 
-    const { name, category, brand, link, skus } = formData;
-    let _matchSPU = matchSPU;
+    let _matchSPU = {
+      ...matchSPU,
+      skus,
+    };
+
     const imagesCreations = (imageUrls as IProduct["imageURLs"]).map(
       (image) => {
         return {
@@ -202,101 +210,37 @@ const ProductForm = <
     );
 
     if (!matchSPU && modalType === "create") {
-      const { results } = await sanityMutationClient({
-        mutations: [
-          {
-            create: {
-              _type: "spu",
-              _id: uuidv4(),
-              name,
-              category,
-              brand,
-              link,
-              // images: imagesCreations,
-            },
-          },
-        ],
-      });
+      const results = await createSpu(formData);
 
       _matchSPU = results[0].document;
-      // await sanityMutationClient(skuCreations);
     }
 
-    const skusResults = await skuCreations(_matchSPU._id);
+    await createSpuImages(_matchSPU._id, imagesCreations);
 
-    // update skus reference to spu
-    const _skus = _matchSPU.skus
-      ? [..._matchSPU.skus, ...skusResults]
-      : skusResults;
+    if (modalType === "create") {
+      const skus = await createSkus(_matchSPU._id, formData);
 
-    const data =
-      skusResults.length > 0
-        ? {
-            skus: _skus.map(({ _id }: any) => {
-              return {
-                _type: "reference",
-                _key: uuidv4().split("-")[0],
-                _ref: _id,
-              };
-            }),
-          }
-        : {};
+      await createInventory(_matchSPU._id, skus, _matchSPU.inventory);
+    }
 
-    await sanityMutationClient({
-      mutations: [
-        {
-          patch: {
-            id: _matchSPU._id,
-            set: {
-              name,
-              category,
-              brand,
-              link,
-              images: imagesCreations,
-              ...data,
-            },
-          },
-        },
-      ],
+    if (modalType === "update") {
+      const skus = await updateSkus(_matchSPU._id, formData, record);
+      // await updateInventory(_matchSPU._id, skus);
+    }
+
+    await updateSpu(_matchSPU._id, {
+      ...formData,
+      images: imagesCreations,
     });
 
     setConfirmLoading(false);
     setOpen(false);
     clearForm();
-    // await formPost(skuCreations, spuCreations, imagesCreations);
-
-    // here go set a fetch request to sanity.io
-  };
-
-  const skuCreations = async (matchSPUId: string) => {
-    const { skus } = formData;
-
-    if (skus!.length === 0) return [];
-    const { results } = await sanityMutationClient({
-      mutations: skus?.map(({ attribute, price }) => {
-        return {
-          create: {
-            _type: "sku",
-            spu: {
-              _type: "spu",
-              _ref: matchSPUId,
-            },
-            price,
-            attribute: {
-              color: attribute?.color,
-              size: attribute?.size,
-            },
-          },
-        };
-      }),
-    });
-
-    return results.map(({ document }: any) => ({ ...document }));
   };
 
   const clearForm = async () => {
     setFormData({
-      name: "",
+      name: undefined,
       category: "",
       brand: "",
       link: "",
@@ -315,7 +259,8 @@ const ProductForm = <
   };
 
   useEffect(() => {
-    if (record && open) {
+    clearForm();
+    if (record && open && modalType === "update") {
       setFormData({
         name: record.name,
         category: record.category,
@@ -326,7 +271,8 @@ const ProductForm = <
       defaultNameInit([record.name]);
       setMatchSPU(record);
     }
-  }, [open, record]);
+  }, [open, record, modalType]);
+
   return (
     <form className="flex flex-col" onSubmit={formSubitHandler}>
       <GoogleUploader />
@@ -381,7 +327,7 @@ const ProductForm = <
               setFormData((prev) => ({
                 ...prev,
                 skus: [
-                  ...(prev.skus as any[]),
+                  ...(prev.skus ? prev.skus : []),
                   {
                     attribute: {
                       color: "",

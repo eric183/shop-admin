@@ -47,14 +47,14 @@ export default defineType({
     }),
     defineField({
       type: "array",
-      name: "orderItems",
-      title: "Order Items",
+      name: "order",
+      title: "Order",
       of: [
         {
           type: "reference",
           to: [
             {
-              type: "orderItem",
+              type: "order",
             },
           ],
         },
@@ -65,7 +65,7 @@ export default defineType({
       type: "reference",
       name: "inventory",
       title: "Inventory",
-      weak: true,
+      // weak: true,
 
       to: [
         {

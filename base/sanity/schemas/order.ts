@@ -6,12 +6,12 @@ export default defineType({
   type: "document",
   name: "order",
   fields: [
-    // {
-    //   "type": "string",
-    //   "name": "id",
-    //   "title": "ID",
-    //   "readOnly": true
-    // },
+    {
+      type: "string",
+      name: "orderNumber",
+      title: "OrderNumber",
+      validation: (Rule) => Rule.required(),
+    },
     {
       type: "reference",
       name: "account",
@@ -27,23 +27,49 @@ export default defineType({
       name: "sortNumber",
       title: "Sort Number",
     },
-    {
-      type: "array",
-      name: "orderItems",
-      title: "Order Items",
+    // {
+    //   type: "array",
+    //   name: "orderItems",
+    //   title: "Order Items",
 
-      of: [
-        {
-          type: "reference",
+    //   of: [
+    //     {
+    //       type: "object",
+    //       name: "orderItem",
+    //       title: "Order Item",
+    //       fields: [
+    //         {
+    //           type: "number",
+    //           name: "quantity",
+    //           title: "Quantity",
+    //           description: "数量",
+    //           validation: (Rule) => Rule.required(),
+    //         },
+    //         {
+    //           type: "number",
+    //           name: "preOrderPrice",
+    //           title: "Pre Order Price",
+    //           initialValue: 0,
+    //           description: "预订价格",
+    //         },
 
-          to: [
-            {
-              type: "orderItem",
-            },
-          ],
-        },
-      ],
-    },
+    //         // 该用户订购商品是否买到
+    //         {
+    //           type: "boolean",
+    //           name: "isProductionPurchased",
+    //           title: "Is Purchased",
+    //           initialValue: false,
+    //           description: "该用户订购商品是否买到",
+    //         },
+    //       ],
+    //       // to: [
+    //       //   {
+    //       //     type: "orderItem",
+    //       //   },
+    //       // ],
+    //     },
+    //   ],
+    // },
     {
       type: "array",
       name: "shipments",

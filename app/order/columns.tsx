@@ -11,98 +11,60 @@ const useColumns = () => {
   // const [record, setEditRecord] = useState<IOrder | null>(null);
   const { setOpen, setRecord, setModalType } = modalStore();
   const columns: ColumnsType<IOrder> = [
+    
     // {
-    //   title: "商品图片",
-    //   dataIndex: "imageURLs",
-    //   key: "imageURLs",
-    //   render(images: IOrder["imageURLs"], record, index) {
+    //   title: "品牌",
+    //   dataIndex: "brand",
+    //   key: "brand",
+    // },
+    // {
+    //   title: "商品名",
+    //   dataIndex: "name",
+    //   key: "name",
+    //   render: (text, record) => {
+    //     return text;
+    //   },
+    // },
+    // {
+    //   title: "链接",
+    //   dataIndex: "link",
+    //   key: "link",
+    //   render: (text, record) => {
     //     return (
-    //       <ImagePreviewTool images={images} />
-
-    //       // <ul className="flex flex-row">
-    //       //   {images?.map((image, index) => {
-    //       //     return (
-    //       //       <li className="w-8 h8" key={index}>
-    //       //         <Image width={32} height={32} src={image.asset.url} alt="" />
-    //       //       </li>
-    //       //     );
-    //       //   })}
-    //       // </ul>
+    //       <p className="w-60 overflow-hidden whitespace-nowrap">
+    //         <Link
+    //           href={text}
+    //           target="_blank"
+    //           className="inline-block truncat text-ellipsis "
+    //         >
+    //           {text}
+    //         </Link>
+    //       </p>
     //     );
     //   },
     // },
-    {
-      title: "品牌",
-      dataIndex: "brand",
-      key: "brand",
-    },
-    {
-      title: "商品名",
-      dataIndex: "name",
-      key: "name",
-      render: (text, record) => {
-        return text;
-      },
-    },
     // {
-    //   title: "商品规格 / 价格 ",
-    //   dataIndex: "skus",
-    //   key: "skus",
-    //   render(skus: IOrder["skus"], record, index) {
+    //   title: "操作",
+    //   dataIndex: "operation",
+    //   key: "operation",
+    //   render: (text, record) => {
     //     return (
-    //       <ul>
-    //         {skus.map((sku, index) => {
-    //           return (
-    //             <li key={index}>
-    //               [{sku.attribute.color.toLocaleLowerCase()} -{" "}
-    //               {sku.attribute.size.toLocaleUpperCase()}] / ${sku.price}
-    //             </li>
-    //           );
-    //         })}
-    //       </ul>
+    //       <div>
+    //         <Button
+    //           // type="link"
+    //           onClick={() => {
+    //             setRecord(record);
+    //             setOpen(true);
+    //             setModalType("update");
+    //           }}
+    //           className="text-blue-900"
+    //         >
+    //           编辑
+    //         </Button>
+    //       </div>
     //     );
     //   },
     // },
-    {
-      title: "链接",
-      dataIndex: "link",
-      key: "link",
-      render: (text, record) => {
-        return (
-          <p className="w-60 overflow-hidden whitespace-nowrap">
-            <Link
-              href={text}
-              target="_blank"
-              className="inline-block truncat text-ellipsis "
-            >
-              {text}
-            </Link>
-          </p>
-        );
-      },
-    },
-    {
-      title: "操作",
-      dataIndex: "operation",
-      key: "operation",
-      render: (text, record) => {
-        return (
-          <div>
-            <Button
-              // type="link"
-              onClick={() => {
-                setRecord(record);
-                setOpen(true);
-                setModalType("update");
-              }}
-              className="text-blue-900"
-            >
-              编辑
-            </Button>
-          </div>
-        );
-      },
-    },
   ];
 
   return [columns];

@@ -11,6 +11,20 @@ export interface IProduct {
   skus: Sku[];
   _updatedAt: string;
   price: number;
+  inventory: {
+    _id: string;
+    _ref: string;
+    spu: {
+      _ref: string;
+    };
+    skus: {
+      _id: string;
+      id?: string;
+      sku: { _ref: string; _type: string };
+      _key: string;
+      _type: string;
+    }[];
+  }[];
 }
 
 interface ImageURL {

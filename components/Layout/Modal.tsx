@@ -3,6 +3,7 @@
 import { Modal } from "antd";
 
 import { create } from "zustand";
+import { IProduct } from "~types/product";
 
 export const modalStore = create<{
   open: boolean;
@@ -11,8 +12,8 @@ export const modalStore = create<{
   setTitle: (arg: string) => void;
   confirmLoading: boolean;
   setConfirmLoading: (arg: boolean) => void;
-  record: any;
-  setRecord: (arg: any) => void;
+  record: IProduct;
+  setRecord: (arg: IProduct) => void;
   modalType: "create" | "update";
   setModalType: (arg: "create" | "update") => void;
 }>()((set) => ({
@@ -22,8 +23,8 @@ export const modalStore = create<{
   setTitle: (arg: string) => set({ title: arg }),
   confirmLoading: false,
   setConfirmLoading: (arg: boolean) => set({ confirmLoading: arg }),
-  record: {},
-  setRecord: (arg: any) => set({ record: arg }),
+  record: {} as IProduct,
+  setRecord: (arg: IProduct) => set({ record: arg }),
   modalType: "create",
   setModalType: (arg: "create" | "update") => set({ modalType: arg }),
 }));

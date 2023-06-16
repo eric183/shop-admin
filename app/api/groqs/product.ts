@@ -13,6 +13,15 @@ const productQuery = groq`*[_type == "spu"][$start... $limit]{
     attribute,
     price,
     "remainQuantity": *[_type == "inventory" && _id == ^.inventory._ref][0].remainQuantity,
+    "preQuantity": *[_type == "inventory" && _id == ^.inventory._ref][0].preQuantity,
+    "actualQuantity": *[_type == "inventory" && _id == ^.inventory._ref][0].actualQuantity,
+  },
+  "inventory": *[_type == "inventory" && spu._ref == ^._id]{
+    _id,
+    _ref,
+    _key,
+    spu,
+    skus
   },
   _createdAt,
   _updatedAt,

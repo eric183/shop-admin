@@ -12,7 +12,7 @@ export const schemaTypes = [
   account,
   shipment,
   order,
-  orderItem,
+  // orderItem,
   inventory,
   sku,
   spu,

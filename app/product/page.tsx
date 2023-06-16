@@ -1,9 +1,10 @@
 import { sanityClient } from "~base/sanity/client";
 import productQuery from "~app/api/groqs/product";
 import Root from "./root";
+import { IProduct } from "~types/product";
 
 const Product = async () => {
-  const response = sanityClient.fetch(productQuery, {
+  const response = await sanityClient.fetch<IProduct[]>(productQuery, {
     start: 0,
     limit: 5,
     // start: 0,

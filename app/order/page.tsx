@@ -4,7 +4,7 @@ import orderQuery from "~app/api/groqs/order";
 import { IOrder } from "~types/order";
 
 const Order = async () => {
-  const response = sanityClient.fetch<IOrder>(orderQuery, {
+  const response = await sanityClient.fetch<IOrder[]>(orderQuery, {
     start: 0,
     limit: 5,
     // start: 0,
