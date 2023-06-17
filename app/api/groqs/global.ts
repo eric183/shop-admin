@@ -1,20 +1,11 @@
 import { groq } from "next-sanity";
 
-const orderQuery = groq`*[_type == "order"]{
+const globalQuery = groq`*[_type == "user"]{
   _id,
-  sortNumber,
-  orderStatus,
-  deposit,
-  finalPayment,
-  discount,
-  "skus": *[_type == "sku"] { _id, attribute, "spu": *[_type == "spu" && _id == ^.spu._ref][0]{ "spuId": _id, name }  },
-  "orderItems": orderItems[],
-  "username": account->username,
   "accounts": *[_type == "account"] { _id, username },
-  "shipments": shipments[]-> { _id, carrier, url, address, trackingNumber, type },
-  _createdAt,
-  _updatedAt,
-}`;
+  "skus": *[_type == "sku"] { _id, attribute, "spu": *[_type == "spu" && _id == ^.spu._ref][0]{ "spuId": _id, name }  },
+  "username": account->username,
+}[0]`;
 // "orderItems": orderItems[]-> {..., "sku": sku->, "spu": sku->spu},
 // "account": account-> {..., "avatar": avatar.asset->url},
 // "finalPayment": sum(orderItems[]->sku->price),
@@ -30,4 +21,4 @@ const orderQuery = groq`*[_type == "order"]{
 //     "spu": *[_type == "spu" && _id == ^.spu._ref] {_id, name}[0]
 //   }[0]
 // },
-export default orderQuery;
+export default globalQuery;

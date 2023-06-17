@@ -5,31 +5,53 @@ import useColumns from "./columns";
 import { useQuery } from "@tanstack/react-query";
 import ProductModal from "../../components/Layout/Modal";
 import CreateButton from "./createButton";
-import { IOrder } from "~types/order";
+import { IOrder, IOrderCreateSource } from "~types/order";
 import OrderForm from "./form";
 import CherryTable from "~components/CherryViews/Table";
+import { useRouter } from "next/router";
+import { fetchGlobal } from "~app/api/sanityRest/global";
 
 const Root: React.FC<{
   response: IOrder[];
 }> = ({ response }) => {
   const [teststate, setTeststate] = useState("test");
+
+  const reponseGlobal = useQuery({
+    queryKey: ["global"],
+    queryFn: async () => await fetchGlobal(),
+  });
+
   const { data, status } = useQuery({
     queryKey: ["order"],
     queryFn: () => response,
   });
-  const [column] = useColumns();
-  if (status !== "success") return null;
 
+  const [column] = useColumns(reponseGlobal.refetch);
+  if (status !== "success" || reponseGlobal.status !== "success") return null;
+
+  console.log(reponseGlobal.data, "....");
   console.log(data);
   return (
     <>
       <CreateButton datasource={data} />
 
       <ProductModal>
-        <OrderForm datasource={data} />
+        <OrderForm
+          datasource={data}
+          createSource={
+            {
+              accounts: reponseGlobal.data.accounts,
+              skus: reponseGlobal.data.skus,
+            } as const as IOrderCreateSource
+          }
+        />
       </ProductModal>
       <section>
-        <CherryTable<IOrder> datasource={data} columns={column}></CherryTable>
+        <CherryTable<IOrder>
+          datasource={data}
+          columns={column}
+          keyIndex={"_id"}
+        ></CherryTable>
       </section>
     </>
   );

@@ -2,7 +2,6 @@
 
 import { GradientButton } from "~components/Buttons";
 import { modalStore } from "../../components/Layout/Modal";
-import { T } from "../../dist/static/sanity-2cca04c1";
 import { IOrder } from "~types/order";
 
 interface Props {
@@ -22,7 +21,7 @@ const CreateButton = ({ datasource }: Props) => {
           setModalType("create");
         }}
       >
-        商品添加
+        订单添加
       </GradientButton>
     </section>
   );

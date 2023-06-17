@@ -7,12 +7,6 @@ export default defineType({
   name: "order",
   fields: [
     {
-      type: "string",
-      name: "orderNumber",
-      title: "OrderNumber",
-      validation: (Rule) => Rule.required(),
-    },
-    {
       type: "reference",
       name: "account",
       title: "Account",
@@ -27,49 +21,21 @@ export default defineType({
       name: "sortNumber",
       title: "Sort Number",
     },
-    // {
-    //   type: "array",
-    //   name: "orderItems",
-    //   title: "Order Items",
-
-    //   of: [
-    //     {
-    //       type: "object",
-    //       name: "orderItem",
-    //       title: "Order Item",
-    //       fields: [
-    //         {
-    //           type: "number",
-    //           name: "quantity",
-    //           title: "Quantity",
-    //           description: "数量",
-    //           validation: (Rule) => Rule.required(),
-    //         },
-    //         {
-    //           type: "number",
-    //           name: "preOrderPrice",
-    //           title: "Pre Order Price",
-    //           initialValue: 0,
-    //           description: "预订价格",
-    //         },
-
-    //         // 该用户订购商品是否买到
-    //         {
-    //           type: "boolean",
-    //           name: "isProductionPurchased",
-    //           title: "Is Purchased",
-    //           initialValue: false,
-    //           description: "该用户订购商品是否买到",
-    //         },
-    //       ],
-    //       // to: [
-    //       //   {
-    //       //     type: "orderItem",
-    //       //   },
-    //       // ],
-    //     },
-    //   ],
-    // },
+    {
+      type: "array",
+      name: "orderItems",
+      title: "Order Items",
+      of: [
+        {
+          type: "reference",
+          to: [
+            {
+              type: "orderItem",
+            },
+          ],
+        },
+      ],
+    },
     {
       type: "array",
       name: "shipments",
@@ -132,15 +98,15 @@ export default defineType({
             value: "PAID",
           },
           // 已发货
-          {
-            title: "Shipped",
-            value: "SHIPPED",
-          },
-          // 已收货
-          {
-            title: "Received",
-            value: "RECEIVED",
-          },
+          // {
+          //   title: "Shipped",
+          //   value: "SHIPPED",
+          // },
+          // // 已收货
+          // {
+          //   title: "Received",
+          //   value: "RECEIVED",
+          // },
           // 已取消
           {
             title: "Cancelled",

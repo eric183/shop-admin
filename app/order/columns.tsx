@@ -3,99 +3,178 @@
 import type { ColumnsType } from "antd/es/table";
 import Link from "next/link";
 import { IOrder } from "~types/order";
-import { Button, Image } from "antd";
+import { Button, Drawer, Image, Popconfirm, Tooltip } from "antd";
 import { useState } from "react";
 import { modalStore } from "../../components/Layout/Modal";
+import { deleteOrder } from "~app/api/sanityRest/order";
+import { useQueryClient } from "@tanstack/react-query";
 
-const useColumns = () => {
+const useColumns = (refetch: () => void) => {
+  const queryClient = useQueryClient();
+  const [drawOpen, setDrawOpen] = useState<boolean>(false);
   // const [record, setEditRecord] = useState<IOrder | null>(null);
   const { setOpen, setRecord, setModalType } = modalStore();
+
+  const onClose = () => {
+    setDrawOpen(false);
+  };
+
   const columns: ColumnsType<IOrder> = [
-    
-    // {
-    //   title: "品牌",
-    //   dataIndex: "brand",
-    //   key: "brand",
-    // },
-    // {
-    //   title: "商品名",
-    //   dataIndex: "name",
-    //   key: "name",
-    //   render: (text, record) => {
-    //     return text;
-    //   },
-    // },
-    // {
-    //   title: "链接",
-    //   dataIndex: "link",
-    //   key: "link",
-    //   render: (text, record) => {
-    //     return (
-    //       <p className="w-60 overflow-hidden whitespace-nowrap">
-    //         <Link
-    //           href={text}
-    //           target="_blank"
-    //           className="inline-block truncat text-ellipsis "
-    //         >
-    //           {text}
-    //         </Link>
-    //       </p>
-    //     );
-    //   },
-    // },
-    // {
-    //   title: "操作",
-    //   dataIndex: "operation",
-    //   key: "operation",
-    //   render: (text, record) => {
-    //     return (
-    //       <div>
-    //         <Button
-    //           // type="link"
-    //           onClick={() => {
-    //             setRecord(record);
-    //             setOpen(true);
-    //             setModalType("update");
-    //           }}
-    //           className="text-blue-900"
-    //         >
-    //           编辑
-    //         </Button>
-    //       </div>
-    //     );
-    //   },
-    // },
+    {
+      title: "订单号",
+      dataIndex: "_id",
+      key: "_id",
+      render: (text, record) => {
+        return (
+          <Tooltip title="点击右键复制" color="#108ee9">
+            <span>{`${text.slice(0, 8)}...`}</span>
+          </Tooltip>
+        );
+      },
+    },
+    {
+      title: "买家",
+      dataIndex: "username",
+      key: "username",
+    },
+    {
+      title: "定金",
+      dataIndex: "deposit",
+      key: "deposit",
+    },
+    {
+      title: "优惠活动",
+      dataIndex: "discount",
+      key: "discount",
+    },
+    {
+      title: "尾款",
+      dataIndex: "finalPayment",
+      key: "finalPayment",
+    },
+    {
+      title: "快递信息",
+      dataIndex: "shipments",
+      key: "shipments",
+      render: (object: IOrder["shipments"], record) => {
+        return object ? (
+          <ul>
+            {object.map((item, index) => {
+              return (
+                <li key={index}>
+                  {item.carrier} - {item.address}
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          "暂无信息"
+        );
+      },
+    },
+    {
+      title: "状态",
+      dataIndex: "orderStatus",
+      key: "orderStatus",
+      render: (text, record) => {
+        switch (text) {
+          case "UNPAID":
+            return <span className="text-yellow-500">待付款</span>;
+          case "HALFPAID":
+            return <span className="text-green-500">已付定金</span>;
+          case "PAID":
+            return <span className="text-blue-500">已支付尾款</span>;
+          case "CANCELLED":
+            return <span className="text-red-500">已取消</span>;
+          default:
+            return <span className="text-red-500">未知状态</span>;
+        }
+      },
+    },
+    {
+      title: "操作",
+      dataIndex: "_id",
+      key: "_id",
+      align: "center",
+      render: (id, record) => {
+        return (
+          <div>
+            <Drawer
+              title="商品预览"
+              placement="right"
+              onClose={onClose}
+              width="70%"
+              open={drawOpen}
+            >
+              <p>Some contents...</p>
+              <p>Some contents...</p>
+              <p>Some contents...</p>
+            </Drawer>
+
+            <Button
+              type="link"
+              onClick={() => setDrawOpen(true)}
+              className="text-green-400"
+            >
+              商品预览
+            </Button>
+            <Button
+              type="link"
+              onClick={() => {
+                setRecord(record);
+                setModalType("update");
+                setOpen(true);
+              }}
+            >
+              编辑
+            </Button>
+
+            <Popconfirm
+              title="确定删除吗？"
+              onConfirm={async () => {
+                await deleteOrder(id);
+                await refetch();
+              }}
+            >
+              <Button type="link" className="text-red-500">
+                删除
+              </Button>
+            </Popconfirm>
+          </div>
+        );
+      },
+    },
   ];
 
   return [columns];
 };
 
-// const ImagePreviewTool: React.FC<{ images: IOrder["imageURLs"] }> = ({
-//   images,
-// }) => {
-//   const [visible, setVisible] = useState(false);
-//   return (
-//     <>
-//       {images && (
-//         <Image
-//           preview={{ visible: false }}
-//           width={50}
-//           alt="Preview Image"
-//           src={images[0]?.asset?.url}
-//           onClick={() => setVisible(true)}
-//         />
-//       )}
-//       {/* <div style={{ display: "none" }}>
-//         <Image.PreviewGroup
-//           preview={{ visible, onVisibleChange: (vis) => setVisible(vis) }}
-//         >
-//           {images?.map((image, index) => (
-//             <Image src={image?.asset?.url} key={index} alt="previewer" />
-//           ))}
-//         </Image.PreviewGroup>
-//       </div> */}
-//     </>
-//   );
-// };
+const ImagePreviewTool: React.FC<{ images: IOrder["imageURLs"] }> = ({
+  images,
+}) => {
+  const [visible, setVisible] = useState(false);
+  return (
+    <>
+      {images && (
+        <Image
+          preview={{ visible: false }}
+          width={50}
+          alt="Preview Image"
+          src={images[0]?.asset?.url}
+          onClick={() => setVisible(true)}
+        />
+      )}
+      {/* <div style={{ display: "none" }}>
+        <Image.PreviewGroup
+          preview={{ visible, onVisibleChange: (vis) => setVisible(vis) }}
+        >
+          {images?.map((image, index) => (
+            <Image src={image?.asset?.url} key={index} alt="previewer" />
+          ))}
+        </Image.PreviewGroup>
+      </div> */}
+    </>
+  );
+};
 
 export default useColumns;

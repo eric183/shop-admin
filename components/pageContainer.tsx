@@ -26,11 +26,13 @@ const PageContainer = ({ children }: { children: React.ReactNode }) => {
         <span className="font-extrabold text-gray-500 text-base">
           骷髅樱桃电商后台惹
         </span>
-        <Avatar
-          onClick={signOut}
-          className="rounded-full self-end cursor-pointer"
-          src={data?.user?.image ? data?.user?.image : ""}
-        ></Avatar>
+        {data?.user && (
+          <Avatar
+            onClick={signOut}
+            className="rounded-full self-end cursor-pointer"
+            src={data?.user?.image ? data?.user?.image : ""}
+          ></Avatar>
+        )}
       </header>
 
       {/* Main Content */}

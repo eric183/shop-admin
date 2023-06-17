@@ -37,6 +37,7 @@ const Root: React.FC<{
         <CherryTable<IProduct>
           datasource={data}
           columns={column as ColumnsType<IProduct>}
+          keyIndex={"_id"}
         ></CherryTable>
       </section>
     </>

@@ -37,3 +37,39 @@ interface Shipment {
   address: string;
   trackingNumber: string;
 }
+
+export interface IOrderCreateSource {
+  _id: string;
+  accounts: Account[];
+  skus: Skus[];
+  username: null;
+}
+
+interface Account {
+  _id: string;
+  username: string;
+}
+
+interface Skus {
+  _id: string;
+  attribute: Attribute;
+  spu: Spu;
+}
+
+interface Attribute {
+  color: string;
+  size: string;
+}
+
+interface Spu {
+  spuId: string;
+  name: string;
+}
+
+export type OrderStatus =
+  | "UNPAID"
+  | "HALFPAID"
+  | "PAID"
+  | "SHIPPED"
+  | "RECEIVED"
+  | "CANCELLED";
