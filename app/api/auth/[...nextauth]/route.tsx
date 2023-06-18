@@ -12,6 +12,7 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60,
   },
+  secret: process.env.NEXT_PUBLIC_SECRET,
   providers: [
     // EmailProvider({
     //   server: process.env.EMAIL_SERVER,
