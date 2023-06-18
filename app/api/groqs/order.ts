@@ -7,10 +7,27 @@ const orderQuery = groq`*[_type == "order"]{
   deposit,
   finalPayment,
   discount,
-  "skus": *[_type == "sku"] { _id, attribute, "spu": *[_type == "spu" && _id == ^.spu._ref][0]{ "spuId": _id, name }  },
-  "orderItems": orderItems[],
-  "username": account->username,
-  "accounts": *[_type == "account"] { _id, username },
+  "skus": *[_type == "sku"] { 
+    _id, 
+    attribute, 
+    "spu": *[_type == "spu" && _id == ^.spu._ref][0]{ 
+      "spuId": _id, 
+      name, 
+    }
+  },
+  "orderItems": orderItems[]-> {
+    _id,
+    quantity,
+    _ref,
+    isProductionPurchased,
+    sku-> {
+      _id,
+      "color": attribute.color,
+      "size": attribute.size,
+      "spu": *[_type == "spu" && _id == ^.spu._ref][0] {_id, name, "imageURLs": images[]{asset->{_id, _ref, url}}}
+    }
+  },
+  "account": account-> { _id, username },
   "shipments": shipments[]-> { _id, carrier, url, address, trackingNumber, type },
   _createdAt,
   _updatedAt,

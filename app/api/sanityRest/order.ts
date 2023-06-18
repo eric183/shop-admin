@@ -62,6 +62,52 @@ export const createOrder = async (order: IOrderFormDto, orderItems: any[]) => {
   });
 };
 
+export const updateOrderItem = async (order: IOrderFormDto) => {
+  return await sanityMutationClient({
+    mutations: order.orderItems.map((orderItem) => ({
+      patch: {
+        id: orderItem._id,
+        set: {
+          // sku: {
+          //   _type: "reference",
+          //   _ref: orderItem.sku,
+          //   // weak: true,
+          // },
+          quantity: orderItem.quantity,
+          isProductionPurchased: orderItem.isProductionPurchased,
+        },
+      },
+    })),
+  });
+};
+
+export const updateOrder = async (order: IOrderFormDto) => {
+  const { account, deposit, discount, finalPayment, orderStatus, sortNumber } =
+    order;
+
+  return await sanityMutationClient({
+    mutations: [
+      {
+        patch: {
+          id: order._id,
+          set: {
+            account: {
+              _type: "reference",
+              _ref: account,
+              // weak: true,
+            },
+            deposit,
+            discount,
+            finalPayment,
+            orderStatus,
+            sortNumber,
+          },
+        },
+      },
+    ],
+  });
+};
+
 export const deleteOrder = async (orderId: string) => {
   return await sanityMutationClient({
     mutations: [

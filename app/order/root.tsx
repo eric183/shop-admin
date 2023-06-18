@@ -10,6 +10,7 @@ import OrderForm from "./form";
 import CherryTable from "~components/CherryViews/Table";
 import { useRouter } from "next/router";
 import { fetchGlobal } from "~app/api/sanityRest/global";
+import OrderProductionDrawer from "./drawer";
 
 const Root: React.FC<{
   response: IOrder[];
@@ -46,6 +47,8 @@ const Root: React.FC<{
           }
         />
       </ProductModal>
+
+      <OrderProductionDrawer />
       <section>
         <CherryTable<IOrder>
           datasource={data}

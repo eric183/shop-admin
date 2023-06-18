@@ -8,13 +8,13 @@ import { useState } from "react";
 import { modalStore } from "../../components/Layout/Modal";
 import { deleteOrder } from "~app/api/sanityRest/order";
 import { useQueryClient } from "@tanstack/react-query";
+import { drawStore } from "./drawer";
 
 const useColumns = (refetch: () => void) => {
   const queryClient = useQueryClient();
-  const [drawOpen, setDrawOpen] = useState<boolean>(false);
   // const [record, setEditRecord] = useState<IOrder | null>(null);
   const { setOpen, setRecord, setModalType } = modalStore();
-
+  const { drawInfo, setDrawInfo, setDrawOpen } = drawStore();
   const onClose = () => {
     setDrawOpen(false);
   };
@@ -34,8 +34,11 @@ const useColumns = (refetch: () => void) => {
     },
     {
       title: "买家",
-      dataIndex: "username",
-      key: "username",
+      dataIndex: "account",
+      key: "account",
+      render: (account: IOrder["account"], record) => {
+        return <span className="font-bold">{account.username}</span>;
+      },
     },
     {
       title: "定金",
@@ -99,21 +102,12 @@ const useColumns = (refetch: () => void) => {
       render: (id, record) => {
         return (
           <div>
-            <Drawer
-              title="商品预览"
-              placement="right"
-              onClose={onClose}
-              width="70%"
-              open={drawOpen}
-            >
-              <p>Some contents...</p>
-              <p>Some contents...</p>
-              <p>Some contents...</p>
-            </Drawer>
-
             <Button
               type="link"
-              onClick={() => setDrawOpen(true)}
+              onClick={() => {
+                setDrawOpen(true);
+                setDrawInfo(record.orderItems);
+              }}
               className="text-green-400"
             >
               商品预览
@@ -128,7 +122,6 @@ const useColumns = (refetch: () => void) => {
             >
               编辑
             </Button>
-
             <Popconfirm
               title="确定删除吗？"
               onConfirm={async () => {
@@ -147,34 +140,6 @@ const useColumns = (refetch: () => void) => {
   ];
 
   return [columns];
-};
-
-const ImagePreviewTool: React.FC<{ images: IOrder["imageURLs"] }> = ({
-  images,
-}) => {
-  const [visible, setVisible] = useState(false);
-  return (
-    <>
-      {images && (
-        <Image
-          preview={{ visible: false }}
-          width={50}
-          alt="Preview Image"
-          src={images[0]?.asset?.url}
-          onClick={() => setVisible(true)}
-        />
-      )}
-      {/* <div style={{ display: "none" }}>
-        <Image.PreviewGroup
-          preview={{ visible, onVisibleChange: (vis) => setVisible(vis) }}
-        >
-          {images?.map((image, index) => (
-            <Image src={image?.asset?.url} key={index} alt="previewer" />
-          ))}
-        </Image.PreviewGroup>
-      </div> */}
-    </>
-  );
 };
 
 export default useColumns;

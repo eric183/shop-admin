@@ -8,7 +8,10 @@ export interface IOrder {
   _id: string;
   discount: number;
   deposit: number;
-  username: string;
+  account: {
+    _id: string;
+    username: string;
+  };
   orderItems: OrderItem[];
 }
 
@@ -28,6 +31,13 @@ interface Sku {
 interface Spu {
   _id: string;
   name: string;
+  imageURLs: {
+    asset: {
+      _id: string;
+      _ref: string;
+      url: string;
+    };
+  }[];
 }
 
 interface Shipment {

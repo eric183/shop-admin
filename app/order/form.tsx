@@ -15,7 +15,12 @@ import { IOrder, IOrderCreateSource, OrderStatus } from "~types/order";
 import DirectoryTree, { DirectoryTreeProps } from "antd/es/tree/DirectoryTree";
 import { DataNode } from "antd/es/tree";
 import orderItem from "~base/sanity/schemas/orderItem";
-import { createOrder, createOrderItem } from "~app/api/sanityRest/order";
+import {
+  createOrder,
+  createOrderItem,
+  updateOrder,
+  updateOrderItem,
+} from "~app/api/sanityRest/order";
 
 interface Props {
   datasource: IOrder[];
@@ -23,9 +28,11 @@ interface Props {
 }
 
 export interface IOrderFormDto {
+  _id?: string;
   account: any;
   sortNumber: number;
   orderItems: {
+    _id?: string;
     sku: Partial<Sku>;
     quantity: number;
     preOrderPrice: number;
@@ -204,12 +211,38 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
     setConfirmLoading(true);
 
     if (confirmLoading) return;
-    order;
-    const orderItemsRs = await createOrderItem(order);
-    const orderRs = await createOrder(
-      order,
-      orderItemsRs.results.map((result: any) => result.document)
-    );
+
+    if (!order.account) {
+      window.alert("请输入客户名");
+      return;
+    }
+
+    if (!order.orderItems) {
+      window.alert("请输入订单内容");
+      return;
+    }
+
+    if (!order.shipments) {
+      window.alert("请输入发货信息");
+      return;
+    }
+
+    if (modalType === "create") {
+      const orderItemsRs = await createOrderItem(order);
+      const orderRs = await createOrder(
+        order,
+        orderItemsRs.results.map((result: any) => result.document)
+      );
+    }
+
+    if (modalType === "update") {
+      debugger;
+      const orderItemsRs = await updateOrderItem(order);
+      // const orderRs = await updateOrder(
+      //   order,
+      //   orderItemsRs.results.map((result: any) => result.document)
+      // );
+    }
 
     setConfirmLoading(false);
     setOpen(false);
@@ -240,24 +273,14 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
   };
 
   useEffect(() => {
-    // if (open) {
-    //   addOrderColumn();
-    // }
-    // if (record && open) {
-    //   setFormData({
-    //     name: record.name,
-    //     category: record.category,
-    //     brand: record.brand,
-    //     link: record.link,
-    //     skus: record.skus,
-    //   });
-    //   defaultNameInit([record.name]);
-    //   setMatchSPU(record);
-    // }
+    if (!open) return;
+    if (modalType === "update") {
+      setOrder(record);
+    }
   }, [open, record]);
 
   const { accounts, skus } = createSource;
-
+  console.log(order, "order...", accounts, "accounts...");
   return (
     <article>
       <form className="flex flex-col" onSubmit={formSubitHandler}>
@@ -285,7 +308,7 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
               className="w-full mt-2"
               choiceTransitionName="name"
               ref={selectRef}
-              value={order.account as any}
+              value={order.account._id as any}
             >
               {accounts.map((item, index: number) => (
                 <Select.Option key={index} value={item._id}>
@@ -348,9 +371,12 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                   </label>
                   <Select
                     placeholder="Please select"
-                    onChange={(detail) => {
+                    onChange={(detail, de) => {
                       const currentOrderItems = [...order.orderItems];
-                      currentOrderItems[orderItemIndex].sku = detail;
+
+                      currentOrderItems[orderItemIndex].sku = skus.find(
+                        (sku) => sku._id === detail
+                      )!;
                       setOrder({
                         ...order,
                         orderItems: currentOrderItems,
@@ -360,10 +386,10 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                     size="small"
                     choiceTransitionName="name"
                     ref={selectRef}
-                    value={orderItem.sku}
+                    value={orderItem.sku._id}
                   >
                     {skus.map((item, index: number) => (
-                      <Select.Option key={index} value={item._id} labelInValue>
+                      <Select.Option key={index} value={item._id}>
                         {item.spu.name +
                           " " +
                           item.attribute.color +
@@ -430,6 +456,7 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                 <div className="relative z-0 w-full mb-3 group flex flex-col items-center">
                   <Switch
                     className="text-center mx-auto inline-block border border-cyan-600 mt-5 !bg-[#00000040)]"
+                    checked={orderItem.isProductionPurchased}
                     onChange={(detail) => {
                       const currentOrderItems = [...order.orderItems];
                       currentOrderItems[orderItemIndex].isProductionPurchased =
