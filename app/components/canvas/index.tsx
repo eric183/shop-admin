@@ -70,7 +70,7 @@ const CoinApp = ({ containerRef }: any) => {
 
         if (cameraHistory) {
           camera.position.fromArray(cameraHistory.position);
-          camera.rotation.fromArray(cameraHistory.rotation);
+          // camera.rotation.fromArray(cameraHistory.rotation);
         }
       }}
     >

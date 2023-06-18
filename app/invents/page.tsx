@@ -116,7 +116,6 @@ const data: DataType[] = [
 const Invents = () => {
   return (
     <div className="w-full h-full">
-      <GoogleUploader />
       <Table columns={columns} dataSource={data} />
     </div>
   );

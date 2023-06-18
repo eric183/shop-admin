@@ -1,7 +1,7 @@
 import { Theme } from "next-auth";
 import { createTransport } from "nodemailer";
 
-export async function sendVerificationRequest(params) {
+export async function sendVerificationRequest(params: any) {
   console.log("80", params, "...dsa.f.as");
   const { identifier, url, provider, theme, auth } = params;
   const { host } = new URL(url);

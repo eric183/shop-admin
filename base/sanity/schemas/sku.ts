@@ -1,5 +1,4 @@
 import { defineField, defineType } from "sanity";
-import MyCustomStringInput from "./myCustomStringInput";
 
 export default defineType({
   name: "sku",

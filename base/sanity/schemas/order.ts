@@ -1,5 +1,4 @@
 import { defineType } from "sanity";
-import MyCustomStringInput from "./myCustomStringInput";
 
 export default defineType({
   title: "Order",

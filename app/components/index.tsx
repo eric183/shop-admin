@@ -3,7 +3,7 @@ import { Point } from "@react-three/drei";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRef } from "react";
-import { usePosts } from "../controllers/posts";
+// import { usePosts } from "../controllers/posts";
 const CoinApp = dynamic(() => import("../components/canvas"), { ssr: false });
 const IndexLayout = styled.div`
   section {
@@ -46,7 +46,7 @@ export default function Home() {
   //   todosStore.getSnapshot,
   //   todosStore.getSnapshot
   // );
-  const { data, isFetched } = usePosts();
+  // const { data, isFetched } = usePosts();
   // const query = useQuery({ queryKey: ["todos"], queryFn: fetchPosts });
 
   // console.log(query);
@@ -138,9 +138,9 @@ interface Dog {
   bark(): void;
 }
 
-type EmailMessageContents = MessageOf<Email>;
+// type EmailMessageContents = MessageOf<Email>;
 
-type EmailMessageContents = string;
+// type EmailMessageContents = string;
 
 type DogMessageContents = MessageOf<Dog>;
 
