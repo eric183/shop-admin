@@ -85,9 +85,25 @@ const AuthContainer = () => {
             }}
           >
             <input name="csrfToken" type="hidden" defaultValue={csrf!} />
-            <input
+            {/* <input
               id="email"
               type="email"
+              autoComplete="on"
+              placeholder="Please enter your email"
+              size={30}
+              value={email}
+              onInput={(evt) => {
+                setEmail((evt.target as HTMLInputElement).value);
+              }}
+              onKeyDown={(evt) => {
+                if (evt.key === "Enter") {
+                  // goSignIn(providers);
+                }
+              }}
+            /> */}
+            <input
+              id="email"
+              type="text"
               autoComplete="on"
               placeholder="Please enter your email"
               size={30}

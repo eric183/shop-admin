@@ -5,12 +5,13 @@ const sanityToken = process.env.NEXT_PUBLIC_SANITY_TOKEN;
 const sanityProjectID = process.env.NEXT_PUBLIC_SANITY_STUDIO_PROJECT_ID;
 const sanityDataset = process.env.NEXT_PUBLIC_SANITY_DATASET;
 const sanityURL = process.env.NEXT_PUBLIC_SANITY_STUDIO_URL;
+const useCDN = process.env.NEXT_PUBLIC_CDN === "cdn" ? true : false;
 
 const sanityClient = createClient({
   projectId: sanityProjectID,
   dataset: sanityDataset,
   apiVersion: "2021-10-21",
-  useCdn: process.env.NODE_ENV !== "production",
+  useCdn: useCDN,
 });
 
 const sanityMutationClient = async (data: any) => {

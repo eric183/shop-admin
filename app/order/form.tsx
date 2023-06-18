@@ -117,8 +117,8 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
         (item) => !recordOrderIds.includes(item._id)
       );
 
-      debugger;
-      const orderItemsRs = await updateOrderItem(order);
+      const orderItemsRs = await updateOrderItem(order, record);
+
       // const orderRs = await updateOrder(
       //   order,
       //   orderItemsRs.results.map((result: any) => result.document)
@@ -180,10 +180,10 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
             </label>
             <Select
               placeholder="Please select a person"
-              onChange={(detail) => {
+              onChange={(detail, de) => {
                 setOrder({
                   ...order,
-                  account: detail,
+                  account: accounts.find((item) => item._id === detail),
                 });
               }}
               className="w-full mt-2"
@@ -207,7 +207,9 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                 width={24}
                 color="#1D4ED8"
                 onClick={() => {
-                  const currentOrderItems = order.orderItems;
+                  const currentOrderItems = order.orderItems
+                    ? order.orderItems
+                    : [];
                   // const currentOrders = ];
                   currentOrderItems.push({
                     sku: {},

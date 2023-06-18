@@ -19,6 +19,7 @@ const orderQuery = groq`*[_type == "order"]{
     _id,
     quantity,
     _ref,
+    preOrderPrice,
     isProductionPurchased,
     sku-> {
       _id,
