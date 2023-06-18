@@ -63,16 +63,16 @@ export const createOrder = async (order: IOrderFormDto, orderItems: any[]) => {
 };
 
 export const updateOrderItem = async (order: IOrderFormDto) => {
+  debugger
   return await sanityMutationClient({
     mutations: order.orderItems.map((orderItem) => ({
       patch: {
         id: orderItem._id,
         set: {
-          // sku: {
-          //   _type: "reference",
-          //   _ref: orderItem.sku,
-          //   // weak: true,
-          // },
+          sku: {
+            _type: "reference",
+            _ref: orderItem.sku._id,
+          },
           quantity: orderItem.quantity,
           isProductionPurchased: orderItem.isProductionPurchased,
         },

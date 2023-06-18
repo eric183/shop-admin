@@ -1,6 +1,6 @@
 type Result<T> = { status: "ok"; value: T } | { status: "error"; error: Error };
 
-function contrivedInferred(): Result<string> {
+function contrivedInferred() {
   return Math.random() > 0.5
     ? ({ status: "ok", value: "yay" } as const)
     : ({ status: "error", error: new Error("oopsies") } as const);
@@ -16,12 +16,32 @@ if (resulInferred.status === "error") {
   console.log(resulInferred.error);
 }
 
+// type Unpacked<T> = T extends (infer U)[]
+//   ? U
+//   : T extends (...args: any[]) => infer U
+//   ? U
+//   : T extends Promise<infer U>
+//   ? U
+//   : T;
+type Unpacked<T> = T extends (infer U)[]
+  ? U
+  : T extends Promise<infer U>
+  ? U
+  : T;
+
+type T0 = Unpacked<string>;
+
+const m = 23 as unknown as T0;
+
+// type ReturnType<T> = T extends (...args: any[]) => infer R ? R : any;
+// type T0 = ReturnType<string>; // string
+
 // import React, { useState } from "react";
 // import "./styles.css";
 
 // type Base = {
 //   id: string;
-//   title: string;
+//   title: string;f
 // };
 
 // type GenericSelectProps<TValue> = {

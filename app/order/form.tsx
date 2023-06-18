@@ -81,131 +81,6 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
 
   const spu = datasource;
 
-  const defaultNameInit = (evt: string[]) => {
-    // const name = evt[0];
-    // const foundItem = spu.find((item: IProduct) => item.name === name);
-    // if (foundItem) {
-    //   setMatchSPU(foundItem);
-    //   const currentImages = foundItem?.imageURLs.map(
-    //     (i: any) => i.asset
-    //   ) as any;
-    //   clearImageUrls();
-    //   setImageUrls(currentImages);
-    //   // setImages(currentImages);
-    // } else {
-    //   // setImages(currentImages);
-    //   setMatchSPU(null!);
-    // }
-    // setFormData((prev) => ({
-    //   ...prev,
-    //   name,
-    //   category: foundItem?.category || "",
-    //   brand: foundItem?.brand || "",
-    //   link: foundItem?.link || "",
-    // }));
-    // selectRef.current.blur();
-  };
-
-  const aiCreate = async () => {
-    const prompt = window.prompt("请输入数据");
-    const embeddingPrompt = `{
-      items: [{
-      "name": "",
-      "type": "",
-      "brand": "",
-      "sizes": [{ "color": "","size": "", "quantity": 0}],
-      "link": ""}]
-      }
-
-      按这个结构来如上结构，请填充下面的数据，帮我整理成一个叫做shopJSON的json, 只要给我JSON片段，不要其他废话：
-      ${prompt}`;
-    // {
-    //   items: [{
-    //   "name": "",
-    //   "type": "",
-    //   "brand": "",
-    //   "sizes": [{ "color": "","size": "", "quantity": 0}],
-    //   "link": ""}]
-    //   }
-
-    //   按这个结构来如上结构，请填充下面的数据，帮我整理成一个叫做shopJSON的json, 只要给我JSON片段，不要其他废话：
-    const response: any = await fetch(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_CHATGPT_API_TOKEN}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          stream: false,
-          // temperature: 0.7,
-          temperature: 0,
-          max_tokens: 1500,
-          // stop: "\n",
-          // top_p: 1,
-          frequency_penalty: 0,
-          presence_penalty: 0,
-          // user: body?.user,
-          n: 1,
-          messages: [
-            {
-              role: "user",
-              content: embeddingPrompt, // 4096
-            },
-          ],
-        }),
-      }
-    ).catch((error) => {
-      window.alert("设置错误，请检查网络");
-      console.log(error.message);
-    });
-    const data = await response?.json();
-    const choice = data?.choices[0];
-    const jsonContent = choice.message.content;
-
-    console.log(jsonContent, "Reponse_JSON");
-  };
-
-  const skuInputChangeHandler = (evt: any) => {
-    const [attribute, info, index] = evt.target.name.split("_") as string[];
-
-    const { name, value } = evt.target;
-
-    const currentSku = formData.skus![Number(index)];
-
-    if (info === "price") {
-      currentSku.price = Number(value);
-    }
-    const currentAttribute = currentSku[
-      attribute as keyof Sku
-    ] as Sku["attribute"];
-
-    formData.skus![Number(index)] = {
-      ...currentSku,
-      price: currentSku.price ? currentSku.price : 0,
-      [attribute]: {
-        ...currentAttribute,
-        // ...currentSku[attribute],
-        [info]: value,
-      },
-    };
-
-    setFormData((prev) => ({
-      ...prev,
-      skus: formData.skus!,
-    }));
-  };
-
-  const inputChangeHandler = (evt: any) => {
-    const { name, value } = evt.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
   const formSubitHandler = async (evt: any) => {
     evt.preventDefault();
     setConfirmLoading(true);
@@ -222,10 +97,10 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
       return;
     }
 
-    if (!order.shipments) {
-      window.alert("请输入发货信息");
-      return;
-    }
+    // if (!order.shipments) {
+    //   window.alert("请输入发货信息");
+    //   return;
+    // }
 
     if (modalType === "create") {
       const orderItemsRs = await createOrderItem(order);
@@ -236,6 +111,12 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
     }
 
     if (modalType === "update") {
+      const recordOrderIds = order.orderItems.map((item) => item._id);
+
+      const currentOrders = order.orderItems.filter(
+        (item) => !recordOrderIds.includes(item._id)
+      );
+
       debugger;
       const orderItemsRs = await updateOrderItem(order);
       // const orderRs = await updateOrder(

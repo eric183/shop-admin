@@ -1,11 +1,14 @@
-interface TableProps {
+interface TableProps<T> {
   items: { id: string }[];
   renderItems: (item: { id: string }) => React.ReactNode;
 }
 
-export const Table = (props: TableProps) => {
+// export const Table = (props: TableProps) => {
+//   return null;
+// };
+function Table<T>(props: TableProps<T>) {
   return null;
-};
+}
 
 const Component = () => {
   return (
