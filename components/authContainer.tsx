@@ -129,7 +129,6 @@ const AuthContainer = () => {
               }}
               onKeyDown={(evt) => {
                 if (evt.key === "Enter") {
-                  // goSignIn(providers);
                 }
               }}
             />
