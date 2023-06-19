@@ -24,11 +24,12 @@ import {
 
 interface Props {
   datasource: IProduct[];
+  refetch: () => void;
 }
 // const ProductForm: React.FC<{
 //   datasource: IProduct[];
 // }> = ({ datasource }) => {
-const ProductForm: React.FC<Props> = ({ datasource }) => {
+const ProductForm: React.FC<Props> = ({ datasource, refetch }) => {
   const { setModalType, modalType } = modalStore();
   const [matchSPU, setMatchSPU] = useState<IProduct>(null!);
   const { clearImageUrls, imageUrls, setImageUrls } = useUploadingStore();
@@ -236,6 +237,8 @@ const ProductForm: React.FC<Props> = ({ datasource }) => {
     setConfirmLoading(false);
     setOpen(false);
     clearForm();
+
+    refetch();
   };
 
   const clearForm = async () => {

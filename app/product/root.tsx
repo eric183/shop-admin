@@ -18,7 +18,7 @@ const Root: React.FC<{
   response: IProduct[];
 }> = ({ response }) => {
   const [teststate, setTeststate] = useState("test");
-  const { data, status } = useQuery({
+  const { data, status, refetch } = useQuery({
     queryKey: ["product"],
     queryFn: () => response,
   });
@@ -31,7 +31,7 @@ const Root: React.FC<{
       <CreateButton datasource={data} />
 
       <ProductModal>
-        <ProductForm datasource={data} />
+        <ProductForm datasource={data} refetch={refetch} />
       </ProductModal>
       <section>
         <CherryTable<IProduct>
