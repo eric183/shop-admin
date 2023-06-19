@@ -95,7 +95,6 @@ export const updateSkus = async (
 
   let currentSkus;
 
-  debugger;
   if (skus) {
     if (spu.skus.length > skus.length) {
       // delete
