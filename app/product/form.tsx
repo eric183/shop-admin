@@ -234,11 +234,13 @@ const ProductForm: React.FC<Props> = ({ datasource, refetch }) => {
       images: imagesCreations,
     });
 
+    setTimeout(async () => {
+      await refetch();
+    }, 1500);
+
     setConfirmLoading(false);
     setOpen(false);
     clearForm();
-
-    refetch();
   };
 
   const clearForm = async () => {

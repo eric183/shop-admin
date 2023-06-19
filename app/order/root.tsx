@@ -54,6 +54,7 @@ const Root: React.FC<{
           datasource={data}
           columns={column}
           keyIndex={"_id"}
+          status={status}
         ></CherryTable>
       </section>
     </>

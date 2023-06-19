@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnsType } from "antd/es/table";
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import CherryTable from "~components/CherryViews/Table";
 import { IProduct } from "~types/product";
 import useColumns from "./columns";
@@ -23,19 +23,21 @@ const Root: React.FC<{
     queryFn: () => response,
   });
   const [column] = useColumns();
-  if (status !== "success") return null;
 
-  console.log(data, "product");
+  // if (status !== "success") return null;
+
+  // console.log("data", data, "data");
+
   return (
     <>
-      <CreateButton datasource={data} />
+      <CreateButton datasource={data ? data : []} />
 
       <ProductModal>
-        <ProductForm datasource={data} refetch={refetch} />
+        <ProductForm datasource={data ? data : []} refetch={refetch} />
       </ProductModal>
       <section>
         <CherryTable<IProduct>
-          datasource={data}
+          datasource={data ? data : []}
           columns={column as ColumnsType<IProduct>}
           keyIndex={"_id"}
         ></CherryTable>

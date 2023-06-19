@@ -8,14 +8,20 @@ interface Props<T extends object> {
   keyIndex: string;
   datasource: T[];
   columns: ColumnsType<T>;
+  status: string;
 }
 
 const CherryTable = <T extends object>(props: Props<T>) => {
-  const { datasource, columns, keyIndex } = props;
+  const { datasource, columns, keyIndex, status } = props;
 
   return (
     <div>
-      <Table dataSource={datasource} columns={columns} rowKey={keyIndex} />
+      <Table
+        dataSource={datasource}
+        columns={columns}
+        rowKey={keyIndex}
+        loading={status === "loading"}
+      />
     </div>
   );
 };

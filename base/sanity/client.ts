@@ -18,6 +18,7 @@ const sanityMutationClient = async (data: any) => {
   const response = await fetch(
     `${sanityURL}/?returnIds=true&returnDocuments=true`,
     {
+      cache: "no-cache",
       method: "POST",
       headers: {
         Authorization: `Bearer ${sanityToken}`,
