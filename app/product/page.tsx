@@ -9,6 +9,7 @@ const Product = async () => {
     limit: 5,
     // start: 0,
   });
+  console.log(response);
   return (
     <div className="w-full h-full px-3">
       <Root response={response} />

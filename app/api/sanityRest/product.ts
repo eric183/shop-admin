@@ -94,6 +94,8 @@ export const updateSkus = async (
   const { skus, inventory } = formData;
 
   let currentSkus;
+
+  debugger;
   if (skus) {
     if (spu.skus.length > skus.length) {
       // delete
@@ -124,9 +126,11 @@ export const updateSkus = async (
       const skuToCreate = skus.filter((sku) => !skuIds.includes(sku._id));
 
       currentSkus = await sanityMutationClient({
-        mutations: skuToCreate.map((sku) => ({
-          create: {
+        // mutations: skuToCreate.map((sku) => ({
+        mutations: spu.skus.map((sku) => ({
+          createOrReplace: {
             _type: "sku",
+            _id: sku._id ? sku._id : uuidv4(),
             spu: {
               _type: "spu",
               _ref: matchSPUId,
@@ -172,6 +176,7 @@ export const createInventory = async (
   skus: IProduct["skus"],
   inventory: IProduct["inventory"]
 ) => {
+  inventory = inventory ? inventory : [];
   const injectSkus =
     skus && skus.length > 0
       ? {
