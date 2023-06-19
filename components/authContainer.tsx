@@ -128,8 +128,8 @@ const AuthContainer = () => {
                 setPassword((evt.target as HTMLInputElement).value);
               }}
               onKeyDown={(evt) => {
-                if (evt.key === "Enter") {
-                }
+                // if (evt.key === "Enter") {
+                // }
               }}
             />
 
