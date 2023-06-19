@@ -13,7 +13,7 @@ import { fetchGlobal } from "~app/api/sanityRest/global";
 import OrderProductionDrawer from "./drawer";
 
 const Root: React.FC<{
-  response: IOrder[];
+  response: Promise<IOrder[]>;
 }> = ({ response }) => {
   const [teststate, setTeststate] = useState("test");
 
@@ -24,7 +24,7 @@ const Root: React.FC<{
 
   const { data, status } = useQuery({
     queryKey: ["order"],
-    queryFn: () => response,
+    queryFn: async () => await response,
   });
 
   const [column] = useColumns(reponseGlobal.refetch);

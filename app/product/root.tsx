@@ -15,12 +15,12 @@ import clsx from "clsx";
 import ProductForm from "./form";
 
 const Root: React.FC<{
-  response: IProduct[];
+  response: Promise<IProduct[]>;
 }> = ({ response }) => {
   const [teststate, setTeststate] = useState("test");
   const { data, status, refetch } = useQuery({
     queryKey: ["product"],
-    queryFn: () => response,
+    queryFn: async () => await response,
   });
   const [column] = useColumns();
 

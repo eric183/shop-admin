@@ -4,9 +4,9 @@ import Root from "./root";
 import { IProduct } from "~types/product";
 
 const Product = async () => {
-  const response = await sanityClient.fetch<IProduct[]>(productQuery, {
+  const response = sanityClient.fetch<IProduct[]>(productQuery, {
     start: 0,
-    limit: 5,
+    limit: 30,
     // start: 0,
   });
   console.log(response);
@@ -17,5 +17,7 @@ const Product = async () => {
     </div>
   );
 };
+
+// export const revalidate = 5;
 
 export default Product;
