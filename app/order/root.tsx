@@ -14,9 +14,7 @@ import OrderProductionDrawer from "./drawer";
 import orderQuery from "~app/api/groqs/order";
 import { sanityClient } from "~base/sanity/client";
 
-const Root: React.FC<{}> = () => {
-  const [teststate, setTeststate] = useState("test");
-
+const Root = () => {
   const reponseGlobal = useQuery({
     queryKey: ["global"],
     queryFn: async () => await fetchGlobal(),
