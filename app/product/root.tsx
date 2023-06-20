@@ -13,14 +13,21 @@ import { Select } from "antd";
 import { MinusCircleIcon, PlusCircleIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";
 import ProductForm from "./form";
+import productQuery from "~app/api/groqs/product";
+import { sanityClient } from "~base/sanity/client";
 
 const Root: React.FC<{
-  response: Promise<IProduct[]>;
-}> = ({ response }) => {
+  // response: Promise<IProduct[]>;
+}> = () => {
   const [teststate, setTeststate] = useState("test");
   const { data, status, refetch } = useQuery({
     queryKey: ["product"],
-    queryFn: async () => await response,
+    queryFn: async () =>
+      await sanityClient.fetch<IProduct[]>(productQuery, {
+        start: 0,
+        limit: 50,
+        // start: 0,
+      }),
   });
   const [column] = useColumns();
 

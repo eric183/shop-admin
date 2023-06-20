@@ -11,10 +11,10 @@ import CherryTable from "~components/CherryViews/Table";
 import { useRouter } from "next/router";
 import { fetchGlobal } from "~app/api/sanityRest/global";
 import OrderProductionDrawer from "./drawer";
+import orderQuery from "~app/api/groqs/order";
+import { sanityClient } from "~base/sanity/client";
 
-const Root: React.FC<{
-  response: Promise<IOrder[]>;
-}> = ({ response }) => {
+const Root: React.FC<{}> = () => {
   const [teststate, setTeststate] = useState("test");
 
   const reponseGlobal = useQuery({
@@ -24,7 +24,12 @@ const Root: React.FC<{
 
   const { data, status } = useQuery({
     queryKey: ["order"],
-    queryFn: async () => await response,
+    queryFn: async () =>
+      await sanityClient.fetch<IOrder[]>(orderQuery, {
+        start: 0,
+        limit: 5,
+        // start: 0,
+      }),
   });
 
   const [column] = useColumns(reponseGlobal.refetch);
