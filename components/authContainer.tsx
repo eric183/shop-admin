@@ -13,6 +13,8 @@ import {
 import { useRouter } from "next/router";
 import { use, useState } from "react";
 import styles from "../styles/Signin.module.css";
+import clsx from "clsx";
+import { motion } from "framer-motion";
 interface Credentials {
   id: string;
   name: string;
@@ -74,13 +76,54 @@ const AuthContainer = () => {
   };
 
   return (
-    <div className="caonima relative left-0 top-0 w-full h-full overflow-hidden font-mono">
-      <h2 className="fixed z-50 text-white left-3 top-2">
-        Cherry Vision Shop Admin
-      </h2>
-      <div className={`${styles.wrapper} bg-slate-400`} />
+    <motion.div className="caonima relative left-0 top-0 w-full h-full overflow-hidden font-mono">
+      <h1 className="fixed z-50 text-white left-3 top-2 text-sm">
+        Cherry Vision Shop
+      </h1>
 
-      <div className={styles.content}>
+      {/* transform: rotate(11deg) translate(-20%, -10%); */}
+      {/* ${styles.wrapper} bg-slate-400 rotate-[11deg] translate-x-[-20%] translate-y-[-10%] */}
+      <motion.div
+        layout
+        initial={{
+          rotate: 0,
+          width: 0,
+          // translateX: "-100%",
+          translateX: 0,
+          translateY: 0,
+        }}
+        animate={{
+          width: "70%",
+          rotate: 11,
+          translateX: "-20%",
+          translateY: "-10%",
+        }}
+        transition={{
+          duration: 0.5,
+          delay: 1,
+        }}
+        // "rotate-[11deg]": true,
+        className={clsx({
+          [styles.wrapper]: true,
+          "bg-slate-400": true,
+
+          "translate-x-[-20%] translate-y-[-10%]": true,
+        })}
+      />
+
+      <motion.div
+        initial={{
+          opacity: 0,
+        }}
+        animate={{
+          opacity: 1,
+        }}
+        transition={{
+          duration: 0.4,
+          delay: 1.5,
+        }}
+        className={styles.content}
+      >
         <article className={styles.cardWrapper}>
           <form
             className={styles.cardContent}
@@ -133,16 +176,27 @@ const AuthContainer = () => {
             <hr />
           </form>
         </article>
-      </div>
+      </motion.div>
 
-      <img
+      <motion.img
+        initial={{
+          right: 0,
+        }}
+        animate={{
+          right: "-40%",
+        }}
+        transition={{
+          duration: 1,
+          ease: "easeInOut",
+          delay: 1,
+        }}
         className="fixed min-w-full min-h-full z-10 top-[-20%] right-[-40%]"
         src="/dragon.jpg"
         alt="Pattern Background"
       />
 
       {/* <img src="/dragon.jpg" alt="Pattern Background" className={} /> */}
-    </div>
+    </motion.div>
   );
 };
 
