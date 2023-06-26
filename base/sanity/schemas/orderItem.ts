@@ -26,6 +26,13 @@ export default defineType({
       initialValue: 0,
       description: "预订价格",
     },
+    {
+      type: "number",
+      name: "discount",
+      title: "Discount",
+      initialValue: 0,
+      description: "折扣",
+    },
 
     // 该用户订购商品是否买到
     {

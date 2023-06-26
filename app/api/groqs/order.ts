@@ -21,6 +21,7 @@ const orderQuery = groq`*[_type == "order"]{
     _ref,
     preOrderPrice,
     isProductionPurchased,
+    discount,
     sku-> {
       _id,
       "color": attribute.color,

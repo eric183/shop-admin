@@ -21,6 +21,7 @@ import {
   updateOrder,
   updateOrderItem,
 } from "~app/api/sanityRest/order";
+import { createAccount } from "~app/api/sanityRest/account";
 
 interface Props {
   datasource: IOrder[];
@@ -37,6 +38,7 @@ export interface IOrderFormDto {
     quantity: number;
     preOrderPrice: number;
     isProductionPurchased: boolean;
+    discount: number;
   }[];
   shipments: any[];
   deposit: number;
@@ -64,6 +66,7 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
         quantity: 0,
         preOrderPrice: 0,
         isProductionPurchased: false,
+        discount: 0,
       },
     ],
   });
@@ -80,6 +83,10 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
   const selectRef = useRef<any>();
 
   const spu = datasource;
+
+  const createAccountHandler = ({ username, isNew }: any) => {
+    createAccount({ username });
+  };
 
   const formSubitHandler = async (evt: any) => {
     evt.preventDefault();
@@ -102,6 +109,10 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
     //   return;
     // }
 
+    order.account = order.account.isNew
+      ? (await createAccount(order.account))[0].document
+      : order.account;
+
     if (modalType === "create") {
       const orderItemsRs = await createOrderItem(order);
       const orderRs = await createOrder(
@@ -111,6 +122,7 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
     }
 
     if (modalType === "update") {
+      debugger
       const recordOrderIds = order.orderItems.map((item) => item._id);
 
       const currentOrders = order.orderItems.filter(
@@ -148,6 +160,7 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
           quantity: 0,
           preOrderPrice: 0,
           isProductionPurchased: false,
+          discount: 0,
         },
       ],
     });
@@ -179,17 +192,30 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
               买家
             </label>
             <Select
+              mode="tags"
+              maxTagCount={1}
               placeholder="Please select a person"
               onChange={(detail, de) => {
+                const foundAccount = accounts.find(
+                  (item) => item._id === detail[0]
+                );
+
                 setOrder({
                   ...order,
-                  account: accounts.find((item) => item._id === detail),
+                  account: foundAccount
+                    ? foundAccount
+                    : {
+                        username: detail[0],
+                        isNew: true,
+                      },
                 });
+
+                selectRef.current.blur();
               }}
               className="w-full mt-2"
               choiceTransitionName="name"
               ref={selectRef}
-              value={order.account._id as any}
+              value={order.account?._id as any}
             >
               {accounts.map((item, index: number) => (
                 <Select.Option key={index} value={item._id}>
@@ -216,6 +242,7 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                     quantity: 0,
                     preOrderPrice: 0,
                     isProductionPurchased: false,
+                    discount: 0,
                   });
 
                   setOrder({
@@ -228,7 +255,7 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
             <div className="my-12"></div>
             {order.orderItems?.map((orderItem, orderItemIndex) => (
               <div
-                className="grid md:grid-cols-4 md:gap-6 pl-8"
+                className="grid md:grid-cols-5 md:gap-6 pl-8"
                 key={orderItemIndex}
               >
                 <MinusCircleIcon
@@ -336,6 +363,37 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                     预定价格
                   </label>
                 </div>
+                <div className="relative z-0 w-full mb-3 group">
+                  <input
+                    type="number"
+                    name={`discount_${orderItemIndex}`}
+                    id={`discount_${orderItemIndex}`}
+                    className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                    placeholder=" "
+                    value={orderItem.discount}
+                    onChange={(event) => {
+                      const currentOrderItems = [...order.orderItems];
+                      currentOrderItems[orderItemIndex].discount = parseFloat(
+                        event.target.value
+                      );
+                      setOrder({
+                        ...order,
+                        orderItems: currentOrderItems,
+                      });
+
+                      setOrder({
+                        ...order,
+                        discount: parseFloat(event.target.value),
+                      });
+                    }}
+                  />
+                  <label
+                    htmlFor={`discount_${orderItemIndex}`}
+                    className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                  >
+                    折扣
+                  </label>
+                </div>
                 <div className="relative z-0 w-full mb-3 group flex flex-col items-center">
                   <Switch
                     className="text-center mx-auto inline-block border border-cyan-600 mt-5 !bg-[#00000040)]"
@@ -382,28 +440,7 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
               定金
             </label>
           </div>
-          <div className="relative z-0 w-full mb-6 group">
-            <input
-              type="number"
-              name="discount"
-              id="discount"
-              className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-              placeholder=" "
-              value={order.discount}
-              onChange={(event) => {
-                setOrder({
-                  ...order,
-                  discount: parseFloat(event.target.value),
-                });
-              }}
-            />
-            <label
-              htmlFor="discount"
-              className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-            >
-              折扣
-            </label>
-          </div>
+
           <div className="relative z-0 w-full mb-6 group">
             <input
               type="number"

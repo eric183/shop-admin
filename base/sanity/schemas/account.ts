@@ -116,4 +116,15 @@ export default defineType({
       ],
     },
   ],
+  preview: {
+    select: {
+      title: "username",
+    },
+    prepare(selection) {
+      const { title } = selection;
+      return {
+        title: title,
+      };
+    },
+  },
 });

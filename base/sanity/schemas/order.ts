@@ -57,14 +57,6 @@ export default defineType({
       description: "定金",
     },
 
-    // 优惠
-    {
-      type: "number",
-      name: "discount",
-      title: "Discount",
-      initialValue: 0,
-      description: "优惠活动",
-    },
     {
       type: "number",
       name: "finalPayment",

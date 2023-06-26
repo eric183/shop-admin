@@ -17,6 +17,7 @@ export const createOrderItem = async (order: IOrderFormDto) => {
         preOrderPrice: orderItem.preOrderPrice,
         quantity: orderItem.quantity,
         isProductionPurchased: orderItem.isProductionPurchased,
+        discount: orderItem.discount,
       },
     })),
   });
@@ -38,7 +39,6 @@ export const createOrder = async (order: IOrderFormDto, orderItems: any[]) => {
             // weak: true,
           },
           deposit,
-          discount,
           finalPayment,
           orderItems: orderItems.map((orderItem) => ({
             _type: "reference",
@@ -122,6 +122,8 @@ export const updateOrderItem = async (
                       preOrderPrice: orderItem.preOrderPrice,
                       quantity: orderItem.quantity,
                       isProductionPurchased: orderItem.isProductionPurchased,
+                      discount: orderItem.discount,
+
                       orderItems: {
                         _type: "reference",
                         _ref: orderItem.sku._id,
@@ -141,6 +143,7 @@ export const updateOrderItem = async (
                   preOrderPrice: orderItem.preOrderPrice,
                   quantity: orderItem.quantity,
                   isProductionPurchased: orderItem.isProductionPurchased,
+                  discount: orderItem.discount,
                 },
               }
 
@@ -176,8 +179,7 @@ export const updateOrder = async (
     }[];
   }
 ) => {
-  const { account, deposit, discount, finalPayment, orderStatus, sortNumber } =
-    order;
+  const { account, deposit, finalPayment, orderStatus, sortNumber } = order;
 
   const orderItems = response.results.map(
     (x) => x.document
@@ -201,7 +203,6 @@ export const updateOrder = async (
               // weak: true,
             })),
             deposit,
-            discount,
             finalPayment,
             orderStatus,
             sortNumber,

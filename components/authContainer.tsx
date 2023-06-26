@@ -84,7 +84,6 @@ const AuthContainer = () => {
       {/* transform: rotate(11deg) translate(-20%, -10%); */}
       {/* ${styles.wrapper} bg-slate-400 rotate-[11deg] translate-x-[-20%] translate-y-[-10%] */}
       <motion.div
-        layout
         initial={{
           rotate: 0,
           width: 0,
