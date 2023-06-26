@@ -12,7 +12,7 @@ import {
 } from "next-auth/react";
 import { useRouter } from "next/router";
 import { use, useState } from "react";
-
+import styles from "../styles/Signin.module.css";
 interface Credentials {
   id: string;
   name: string;
@@ -74,33 +74,22 @@ const AuthContainer = () => {
   };
 
   return (
-    <div className="caonima">
-      <div className="text-black">
-        <div className="text-black">
+    <div className="caonima relative left-0 top-0 w-full h-full overflow-hidden font-mono">
+      <h2 className="fixed z-50 text-white left-3 top-2">
+        Cherry Vision Shop Admin
+      </h2>
+      <div className={`${styles.wrapper} bg-slate-400`} />
+
+      <div className={styles.content}>
+        <article className={styles.cardWrapper}>
           <form
-            className="flex"
+            className={styles.cardContent}
             onSubmit={(evt) => {
               evt.preventDefault();
               goSignIn(credentials);
             }}
           >
             <input name="csrfToken" type="hidden" defaultValue={csrf!} />
-            {/* <input
-              id="email"
-              type="email"
-              autoComplete="on"
-              placeholder="Please enter your email"
-              size={30}
-              value={email}
-              onInput={(evt) => {
-                setEmail((evt.target as HTMLInputElement).value);
-              }}
-              onKeyDown={(evt) => {
-                if (evt.key === "Enter") {
-                  // goSignIn(providers);
-                }
-              }}
-            /> */}
             <input
               id="email"
               type="text"
@@ -133,13 +122,25 @@ const AuthContainer = () => {
               }}
             />
 
-            <Button type="link" loading={loading} htmlType="submit">
+            <Button
+              type="link"
+              loading={loading}
+              htmlType="submit"
+              className="font-mono"
+            >
               登录
             </Button>
             <hr />
           </form>
-        </div>
+        </article>
       </div>
+
+      <img
+        className="fixed min-w-full min-h-full z-10 top-[-20%] right-[-40%]"
+        src="/dragon.jpg"
+        alt="Pattern Background"
+      />
+
       {/* <img src="/dragon.jpg" alt="Pattern Background" className={} /> */}
     </div>
   );
