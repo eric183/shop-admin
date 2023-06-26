@@ -87,14 +87,13 @@ const AuthContainer = () => {
         initial={{
           rotate: 0,
           width: 0,
-          // translateX: "-100%",
           translateX: 0,
           translateY: 0,
         }}
         animate={{
-          width: "70%",
           rotate: 11,
-          translateX: "-20%",
+          width: "80%",
+          translateX: "-40%",
           translateY: "-10%",
         }}
         transition={{
@@ -180,9 +179,12 @@ const AuthContainer = () => {
       <motion.img
         initial={{
           right: 0,
+          scale: 1,
         }}
         animate={{
-          right: "-40%",
+          top: "-35%",
+          right: "-30%",
+          scale: 0.8,
         }}
         transition={{
           duration: 1,
