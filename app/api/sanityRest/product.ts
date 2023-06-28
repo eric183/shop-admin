@@ -198,3 +198,41 @@ export const updateProduct = async (spuId: string, formData: any, spu: any) => {
     mutations,
   });
 };
+
+export const deleteProduct = async (spu: any) => {
+  const mutations: any = [
+    {
+      delete: {
+        id: spu._id,
+      },
+    },
+  ];
+
+  const skuIds = spu.skus.map((sku: { _id: any }) => sku._id);
+  const inventoryIds = spu.inventory.map((i: { _id: any }) => i._id);
+
+  mutations.push(
+    ...skuIds.map((skuId: any) => {
+      const foundInventory = spu.inventory.find((i: any) =>
+        i.skus.find((x: any) => x?.id === skuId)
+      );
+
+      const inventoryId = foundInventory._id;
+
+      mutations.push({
+        delete: {
+          id: inventoryId,
+        },
+      });
+
+      return {
+        delete: {
+          id: skuId,
+        },
+      };
+    })
+  );
+  await sanityMutationClient({
+    mutations,
+  });
+};
