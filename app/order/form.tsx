@@ -122,7 +122,7 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
     }
 
     if (modalType === "update") {
-      debugger
+      // debugger
       const recordOrderIds = order.orderItems.map((item) => item._id);
 
       const currentOrders = order.orderItems.filter(
