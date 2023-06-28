@@ -20,18 +20,18 @@ const useColumns = (refetch: () => void) => {
   };
 
   const columns: ColumnsType<IOrder> = [
-    {
-      title: "订单号",
-      dataIndex: "_id",
-      key: "_id",
-      render: (text, record) => {
-        return (
-          <Tooltip title="点击右键复制" color="#108ee9">
-            <span>{`${text.slice(0, 8)}...`}</span>
-          </Tooltip>
-        );
-      },
-    },
+    // {
+    //   title: "订单号",
+    //   dataIndex: "_id",
+    //   key: "_id",
+    //   render: (text, record) => {
+    //     return (
+    //       <Tooltip title="点击右键复制" color="#108ee9">
+    //         <span>{`${text.slice(0, 8)}...`}</span>
+    //       </Tooltip>
+    //     );
+    //   },
+    // },
     {
       title: "买家",
       dataIndex: "account",
@@ -45,11 +45,11 @@ const useColumns = (refetch: () => void) => {
       dataIndex: "deposit",
       key: "deposit",
     },
-    {
-      title: "优惠活动",
-      dataIndex: "discount",
-      key: "discount",
-    },
+    // {
+    //   title: "优惠活动",
+    //   dataIndex: "discount",
+    //   key: "discount",
+    // },
     {
       title: "尾款",
       dataIndex: "finalPayment",
