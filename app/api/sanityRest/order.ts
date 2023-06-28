@@ -4,9 +4,8 @@ import { IOrder, IOrderCreateSource } from "~types/order";
 import { v4 as uuidv4 } from "uuid";
 
 export const createOrderSampler = async (order: any) => {
-  const { account, deposit, discount, finalPayment, orderStatus, sortNumber } =
-    order;
-  const orderItems = order.orderItems.map((orderItem) => ({
+  const { account, deposit, finalPayment, orderStatus, sortNumber } = order;
+  const orderItems = order.orderItems.map((orderItem: any) => ({
     ...orderItem,
     _id: uuidv4(),
   }));
@@ -24,7 +23,7 @@ export const createOrderSampler = async (order: any) => {
           },
           deposit,
           finalPayment,
-          orderItems: orderItems.map((orderItem) => ({
+          orderItems: orderItems.map((orderItem: { _id: any }) => ({
             _type: "reference",
             _ref: orderItem._id,
             _key: uuidv4(),
@@ -34,21 +33,30 @@ export const createOrderSampler = async (order: any) => {
           sortNumber,
         },
       },
-      ...orderItems.map((orderItem) => ({
-        create: {
-          _type: "orderItem",
-          _id: orderItem._id,
-          sku: {
-            _type: "reference",
-            _ref: orderItem.sku._id,
-            // weak: true,
+      ...orderItems.map(
+        (orderItem: {
+          _id: any;
+          sku: { _id: any };
+          preOrderPrice: any;
+          quantity: any;
+          isProductionPurchased: any;
+          discount: any;
+        }) => ({
+          create: {
+            _type: "orderItem",
+            _id: orderItem._id,
+            sku: {
+              _type: "reference",
+              _ref: orderItem.sku._id,
+              // weak: true,
+            },
+            preOrderPrice: orderItem.preOrderPrice,
+            quantity: orderItem.quantity,
+            isProductionPurchased: orderItem.isProductionPurchased,
+            discount: orderItem.discount,
           },
-          preOrderPrice: orderItem.preOrderPrice,
-          quantity: orderItem.quantity,
-          isProductionPurchased: orderItem.isProductionPurchased,
-          discount: orderItem.discount,
-        },
-      })),
+        })
+      ),
     ],
   });
 };

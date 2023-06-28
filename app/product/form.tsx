@@ -9,16 +9,7 @@ import GoogleUploader, {
 import { modalStore } from "../../components/Layout/Modal";
 import React, { useState, useRef, useEffect } from "react";
 import { IProduct, Sku } from "~types/product";
-import {
-  createInventory,
-  createProductSampler,
-  createSkus,
-  createSpu,
-  createSpuImages,
-  // updateInventory,
-  updateSkus,
-  updateSpu,
-} from "~app/api/sanityRest/product";
+import { createProduct, updateProduct } from "~app/api/sanityRest/product";
 
 interface Props {
   datasource: IProduct[];
@@ -78,7 +69,17 @@ const ProductForm: React.FC<Props> = ({ datasource, refetch }) => {
       category: foundItem?.category || "",
       brand: foundItem?.brand || "",
       link: foundItem?.link || "",
-      skus: foundItem?.skus || [],
+      skus:
+        foundItem?.skus && foundItem?.skus.length > 0
+          ? foundItem?.skus
+          : [
+              {
+                attribute: {
+                  color: "",
+                  size: "",
+                },
+              },
+            ],
       inventory: foundItem?.inventory || [],
     }));
 
@@ -191,7 +192,7 @@ const ProductForm: React.FC<Props> = ({ datasource, refetch }) => {
     setConfirmLoading(true);
 
     const { skus } = formData;
-    debugger;
+
     const _matchSPU = {
       ...matchSPU,
       skus,
@@ -220,25 +221,25 @@ const ProductForm: React.FC<Props> = ({ datasource, refetch }) => {
         ...formData,
         images: imagesCreations,
       };
-      debugger;
-      createProductSampler(createForm);
+
+      await createProduct(createForm);
     }
 
-    // await createSpuImages(_matchSPU._id, imagesCreations);
-
-    // if (modalType === "create") {
-    //   const skus = await createSkus(_matchSPU._id, formData);
-
-    //   await createInventory(_matchSPU._id, skus, _matchSPU.inventory);
-    // }
-
     if (modalType === "update") {
-      const skus = await updateSkus(_matchSPU._id, formData, record);
-      // await updateInventory(_matchSPU._id, skus);
-      await updateSpu(_matchSPU._id, {
-        ...formData,
-        images: imagesCreations,
-      });
+      await updateProduct(
+        _matchSPU._id,
+        {
+          ...formData,
+          images: imagesCreations,
+        },
+        record
+      );
+      // const skus = await updateSkus(_matchSPU._id, formData, record);
+      // // await updateInventory(_matchSPU._id, skus);
+      // await updateSpu(_matchSPU._id, {
+      //   ...formData,
+      //   images: imagesCreations,
+      // });
     }
 
     setTimeout(async () => {
