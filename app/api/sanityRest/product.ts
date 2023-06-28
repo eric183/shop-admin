@@ -1,6 +1,77 @@
 import { sanityMutationClient } from "~base/sanity/client";
 import { v4 as uuidv4 } from "uuid";
 import { IProduct } from "~types/product";
+
+export const createProductSampler = async (_formData_: any) => {
+  const { name, category, brand, link, skus, images, inventory, _id } =
+    _formData_;
+  debugger;
+  const spuId = _id ? _id : uuidv4();
+
+  const mutations: any = [
+    {
+      createOrReplace: {
+        _type: "spu",
+        _id: spuId,
+        name,
+        category,
+        brand,
+        link,
+        images,
+      },
+    },
+  ];
+
+  if (skus && skus.length > 0) {
+    mutations.push(
+      ...skus.map(({ _id, attribute, price }: any) => {
+        const skuId = _id ? _id : uuidv4();
+
+        mutations.push({
+          createOrReplace: {
+            _type: "inventory",
+            _id: uuidv4(),
+            spu: {
+              _type: "reference",
+              _ref: skuId,
+            },
+          },
+        });
+        return {
+          createOrReplace: {
+            _type: "sku",
+            _id: skuId,
+            spu: { _type: "spu", _ref: spuId },
+            price,
+            attribute: {
+              color: attribute?.color,
+              size: attribute?.size,
+            },
+          },
+        };
+      })
+    );
+  }
+
+  // const foundInventory = inventory.find((_i_) => _i_.spu._ref === spuId);
+  // if (foundInventory || (skus && skus.length > 0)) {
+  //   mutations.push({
+  //     patch: {
+  //       id: foundInventory?._id || uuidv4(),
+  //       set: {
+  //         spu: { _type: "spu", _ref: spuId },
+  //         ...(foundInventory?.skus
+  //           ? { skus: [...foundInventory.skus, ...skus] }
+  //           : { skus }),
+  //       },
+  //     },
+  //   });
+  // }
+  debugger;
+  const { results } = await sanityMutationClient({ mutations });
+  return results;
+};
+
 // create spu
 export const createSpu = async (
   formData: Partial<IProduct>
@@ -25,32 +96,6 @@ export const createSpu = async (
   });
 
   return results;
-};
-
-// update spu
-export const updateSpu = async (
-  matchSPUId: string,
-  formData: Partial<IProduct> & { images: any }
-) => {
-  const { skus, category, brand, link, images, name } = formData;
-
-  await sanityMutationClient({
-    mutations: [
-      {
-        patch: {
-          id: matchSPUId,
-          set: {
-            name,
-            category,
-            brand,
-            link,
-            images,
-            // ...data,
-          },
-        },
-      },
-    ],
-  });
 };
 
 export const createSkus = async (
@@ -81,69 +126,6 @@ export const createSkus = async (
   });
 
   return results.map(({ document }: any) => ({ ...document }))!;
-};
-
-// update skus
-export const updateSkus = async (
-  matchSPUId: string,
-  formData: Partial<IProduct>,
-  spu: IProduct
-) => {
-  const { skus, inventory } = formData;
-
-  let currentSkus;
-  if (skus) {
-    if (spu.skus.length > skus.length) {
-      // delete
-      const skuIds = skus.map((sku) => sku._id!);
-
-      const noSkuToDelete = spu.skus.filter((sku) => skuIds.includes(sku._id!));
-      const skuToDelete = spu.skus.filter((sku) => !skuIds.includes(sku._id!));
-
-      // const invertoryToDelete = inventory?.skus.filter((sku) => !skuIds.includes(sku.sku._ref))
-      // debugger;
-      const deleteResults = await deleteInventory(
-        matchSPUId,
-        noSkuToDelete.map((x) => x._id!),
-        spu.inventory
-      );
-
-      // debugger;
-      currentSkus = await sanityMutationClient({
-        mutations: skuToDelete.map((sku) => ({
-          delete: {
-            id: sku._id,
-          },
-        })),
-      });
-    } else {
-      // create
-      const skuIds = spu.skus.map((sku) => sku._id);
-      // const skuToCreate = skus.filter((sku) => !skuIds.includes(sku._id));
-
-      currentSkus = await sanityMutationClient({
-        // mutations: skuToCreate.map((sku) => ({
-        mutations: skus.map((sku) => ({
-          createOrReplace: {
-            _type: "sku",
-            _id: sku._id ? sku._id : uuidv4(),
-            spu: {
-              _type: "spu",
-              _ref: matchSPUId,
-            },
-
-            price: sku.price,
-            attribute: {
-              color: sku.attribute?.color,
-              size: sku.attribute?.size,
-            },
-          },
-        })),
-      });
-    }
-
-    return currentSkus;
-  }
 };
 
 // create images
@@ -217,6 +199,95 @@ export const createInventory = async (
   });
 
   return results;
+};
+
+// update spu
+export const updateSpu = async (
+  matchSPUId: string,
+  formData: Partial<IProduct> & { images: any }
+) => {
+  const { skus, category, brand, link, images, name } = formData;
+
+  await sanityMutationClient({
+    mutations: [
+      {
+        patch: {
+          id: matchSPUId,
+          set: {
+            name,
+            category,
+            brand,
+            link,
+            images,
+            // ...data,
+          },
+        },
+      },
+    ],
+  });
+};
+
+// update skus
+export const updateSkus = async (
+  matchSPUId: string,
+  formData: Partial<IProduct>,
+  spu: IProduct
+) => {
+  const { skus, inventory } = formData;
+
+  let currentSkus;
+  if (skus) {
+    if (spu.skus.length > skus.length) {
+      // delete
+      const skuIds = skus.map((sku) => sku._id!);
+
+      const noSkuToDelete = spu.skus.filter((sku) => skuIds.includes(sku._id!));
+      const skuToDelete = spu.skus.filter((sku) => !skuIds.includes(sku._id!));
+
+      // const invertoryToDelete = inventory?.skus.filter((sku) => !skuIds.includes(sku.sku._ref))
+      // debugger;
+      const deleteResults = await deleteInventory(
+        matchSPUId,
+        noSkuToDelete.map((x) => x._id!),
+        spu.inventory
+      );
+
+      // debugger;
+      currentSkus = await sanityMutationClient({
+        mutations: skuToDelete.map((sku) => ({
+          delete: {
+            id: sku._id,
+          },
+        })),
+      });
+    } else {
+      // create
+      const skuIds = spu.skus.map((sku) => sku._id);
+      // const skuToCreate = skus.filter((sku) => !skuIds.includes(sku._id));
+
+      currentSkus = await sanityMutationClient({
+        // mutations: skuToCreate.map((sku) => ({
+        mutations: skus.map((sku) => ({
+          createOrReplace: {
+            _type: "sku",
+            _id: sku._id ? sku._id : uuidv4(),
+            spu: {
+              _type: "spu",
+              _ref: matchSPUId,
+            },
+
+            price: sku.price,
+            attribute: {
+              color: sku.attribute?.color,
+              size: sku.attribute?.size,
+            },
+          },
+        })),
+      });
+    }
+
+    return currentSkus;
+  }
 };
 
 export const deleteInventory = async (

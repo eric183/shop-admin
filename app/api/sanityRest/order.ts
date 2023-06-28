@@ -3,6 +3,56 @@ import { sanityMutationClient } from "~base/sanity/client";
 import { IOrder, IOrderCreateSource } from "~types/order";
 import { v4 as uuidv4 } from "uuid";
 
+export const createOrderSampler = async (order: any) => {
+  const { account, deposit, discount, finalPayment, orderStatus, sortNumber } =
+    order;
+  const orderItems = order.orderItems.map((orderItem) => ({
+    ...orderItem,
+    _id: uuidv4(),
+  }));
+
+  return await sanityMutationClient({
+    mutations: [
+      {
+        create: {
+          _type: "order",
+          _id: uuidv4(),
+          account: {
+            _type: "reference",
+            _ref: account._id,
+            // weak: true,
+          },
+          deposit,
+          finalPayment,
+          orderItems: orderItems.map((orderItem) => ({
+            _type: "reference",
+            _ref: orderItem._id,
+            _key: uuidv4(),
+            // weak: true,
+          })),
+          orderStatus,
+          sortNumber,
+        },
+      },
+      ...orderItems.map((orderItem) => ({
+        create: {
+          _type: "orderItem",
+          _id: orderItem._id,
+          sku: {
+            _type: "reference",
+            _ref: orderItem.sku._id,
+            // weak: true,
+          },
+          preOrderPrice: orderItem.preOrderPrice,
+          quantity: orderItem.quantity,
+          isProductionPurchased: orderItem.isProductionPurchased,
+          discount: orderItem.discount,
+        },
+      })),
+    ],
+  });
+};
+
 export const createOrderItem = async (order: IOrderFormDto) => {
   return await sanityMutationClient({
     mutations: order.orderItems.map((orderItem) => ({
