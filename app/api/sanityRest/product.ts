@@ -1,8 +1,6 @@
 import { sanityMutationClient } from "~base/sanity/client";
 import { v4 as uuidv4 } from "uuid";
 import { IProduct } from "~types/product";
-import sku from "~base/sanity/schemas/sku";
-import { omit } from "lodash";
 // create spu
 export const createSpu = async (
   formData: Partial<IProduct>
@@ -94,7 +92,6 @@ export const updateSkus = async (
   const { skus, inventory } = formData;
 
   let currentSkus;
-
   if (skus) {
     if (spu.skus.length > skus.length) {
       // delete
@@ -122,11 +119,11 @@ export const updateSkus = async (
     } else {
       // create
       const skuIds = spu.skus.map((sku) => sku._id);
-      const skuToCreate = skus.filter((sku) => !skuIds.includes(sku._id));
+      // const skuToCreate = skus.filter((sku) => !skuIds.includes(sku._id));
 
       currentSkus = await sanityMutationClient({
         // mutations: skuToCreate.map((sku) => ({
-        mutations: spu.skus.map((sku) => ({
+        mutations: skus.map((sku) => ({
           createOrReplace: {
             _type: "sku",
             _id: sku._id ? sku._id : uuidv4(),

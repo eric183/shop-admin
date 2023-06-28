@@ -1,7 +1,6 @@
 import { PlusCircleIcon, MinusCircleIcon } from "@heroicons/react/20/solid";
 import { Select } from "antd";
 import clsx from "clsx";
-import spu from "~base/sanity/schemas/spu";
 import { v4 as uuidv4 } from "uuid";
 
 import GoogleUploader, {
@@ -9,14 +8,12 @@ import GoogleUploader, {
 } from "~components/Layout/GoogleUploader";
 import { modalStore } from "../../components/Layout/Modal";
 import React, { useState, useRef, useEffect } from "react";
-import { sanityMutationClient } from "~base/sanity/client";
 import { IProduct, Sku } from "~types/product";
 import {
   createInventory,
   createSkus,
   createSpu,
   createSpuImages,
-  deleteInventory,
   // updateInventory,
   updateSkus,
   updateSpu,
