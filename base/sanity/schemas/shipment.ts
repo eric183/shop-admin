@@ -32,13 +32,13 @@ export default defineType({
     },
     {
       type: "reference",
-      name: "order",
-      title: "Order",
+      name: "brandOrder",
+      title: "BrandOrder",
       description: "订单",
       // weak: false,
       to: [
         {
-          type: "order",
+          type: "userOrder",
         },
       ],
     },

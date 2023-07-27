@@ -9,7 +9,7 @@ import { modalStore } from "../../components/Layout/Modal";
 import { deleteOrder } from "~app/api/sanityRest/order";
 import { useQueryClient } from "@tanstack/react-query";
 import { drawStore } from "./drawer";
-
+import dayjs from "dayjs";
 const useColumns = (refetch: () => void) => {
   const queryClient = useQueryClient();
   // const [record, setEditRecord] = useState<IOrder | null>(null);
@@ -73,6 +73,15 @@ const useColumns = (refetch: () => void) => {
         ) : (
           "暂无信息"
         );
+      },
+    },
+    {
+      title: "创建日期",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (text) => {
+        // YYYY-MM-DD
+        return dayjs(text).format("YYYY-MM-DD");
       },
     },
     {

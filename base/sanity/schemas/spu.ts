@@ -43,9 +43,14 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     },
     {
-      type: "string",
+      type: "reference",
       name: "brand",
       title: "Brand",
+      to: [
+        {
+          type: "brand",
+        },
+      ],
       // validation: (Rule) => Rule.required(),
     },
     {

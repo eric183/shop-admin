@@ -7,7 +7,6 @@ const orderQuery = groq`*[_type == "order" && _createdAt >= $dateRange.gte && _c
   orderStatus,
   deposit,
   finalPayment,
-  quantity,
   discount,
   "skus": *[_type == "sku"] { 
     _id, 

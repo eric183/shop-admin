@@ -14,8 +14,15 @@ const RoutePaths: RoutePathesType[] = [
     sort: 1,
   },
   {
-    path: "order",
-    linkLabel: "订单管理",
+    path: "userOrder",
+    linkLabel: "用户订单管理",
+    parent: null,
+    children: [],
+    sort: 2,
+  },
+  {
+    path: "brandOrder",
+    linkLabel: "采购订单管理",
     parent: null,
     children: [],
     sort: 2,

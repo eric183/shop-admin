@@ -21,11 +21,8 @@ const PageContainer = ({ children }: { children: React.ReactNode }) => {
       {/* Header */}
       <header
         role="banner"
-        className="flex items-center justify-between px-4 bg-sky-200 text-white py-3 text-sm font-medium flex-shrink-0"
+        className="flex items-center px-4 bg-sky-200 text-white py-3 text-sm font-medium flex-shrink-0"
       >
-        <span className="font-extrabold text-gray-500 text-base">
-          骷髅樱桃电商后台惹
-        </span>
         {data?.user && (
           <Avatar
             onClick={signOut}
@@ -33,6 +30,9 @@ const PageContainer = ({ children }: { children: React.ReactNode }) => {
             src={data?.user?.image ? data?.user?.image : ""}
           ></Avatar>
         )}
+        <span className="font-extrabold text-gray-500 text-base ml-4">
+          骷髅樱桃电商后台惹
+        </span>
       </header>
 
       {/* Main Content */}

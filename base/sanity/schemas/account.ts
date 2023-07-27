@@ -102,14 +102,14 @@ export default defineType({
     },
     {
       type: "array",
-      name: "orders",
-      title: "Orders",
+      name: "userOrders",
+      title: "UserOrders",
       of: [
         {
           type: "reference",
           to: [
             {
-              type: "order",
+              type: "userOrder",
             },
           ],
         },

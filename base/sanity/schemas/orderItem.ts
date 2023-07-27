@@ -34,6 +34,20 @@ export default defineType({
       description: "折扣",
     },
 
+    {
+      type: "number",
+      name: "finalPayment",
+      title: "Final Payment",
+      initialValue: 0,
+      description: "尾款",
+    },
+
+    {
+      type: "number",
+      name: "deposit",
+      title: "Deposit",
+      description: "定金",
+    },
     // 该用户订购商品是否买到
     {
       type: "boolean",

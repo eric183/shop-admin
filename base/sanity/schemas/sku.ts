@@ -46,14 +46,14 @@ export default defineType({
     }),
     defineField({
       type: "array",
-      name: "order",
-      title: "Order",
+      name: "userOrder",
+      title: "UserOrder",
       of: [
         {
           type: "reference",
           to: [
             {
-              type: "order",
+              type: "userOrder",
             },
           ],
         },

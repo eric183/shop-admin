@@ -6,12 +6,14 @@ import clsx from "clsx";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import RoutePaths from "~base/NavPaths";
+import OrderCreateButton from "~components/Buttons/orderCreateButton";
 
 const SideNav = () => {
   const pathname = usePathname();
   return (
     <div className="w-full h-full">
       <div className="mx-auto w-full h-full max-w-md rounded-2xl bg-white py-2 shadow-md hover:shadow-2xl ease-in duration-200">
+        <OrderCreateButton className="!justify-start ml-3" />
         {RoutePaths.map((r, key) => (
           <Disclosure key={key} as="div" className={`px-2`}>
             {({ open }) => (

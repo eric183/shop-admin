@@ -1,4 +1,4 @@
-import { IOrderFormDto } from "~app/order/form";
+import { IOrderFormDto } from "~app/userOrder/form";
 import { sanityMutationClient } from "~base/sanity/client";
 import { IOrder, IOrderCreateSource } from "~types/order";
 import { v4 as uuidv4 } from "uuid";

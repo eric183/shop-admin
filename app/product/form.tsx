@@ -51,9 +51,10 @@ const ProductForm: React.FC<Props> = ({ datasource, refetch }) => {
 
     if (foundItem) {
       setMatchSPU(foundItem);
-      const currentImages = foundItem?.imageURLs.map(
-        (i: any) => i.asset
-      ) as any;
+
+      const currentImages = foundItem?.imageURLs
+        ? foundItem?.imageURLs.map((i: any) => i.asset)
+        : [];
       clearImageUrls();
 
       setImageUrls(currentImages);

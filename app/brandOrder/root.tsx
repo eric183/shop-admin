@@ -13,8 +13,9 @@ import { fetchGlobal } from "~app/api/sanityRest/global";
 import OrderProductionDrawer from "./drawer";
 import orderQuery from "~app/api/groqs/order";
 import { sanityClient } from "~base/sanity/client";
+import { MonthPicker } from "./Picker";
 
-const Root = () => {
+const Root = ({ year, month }: { year: string; month: string }) => {
   const reponseGlobal = useQuery({
     queryKey: ["global"],
     queryFn: async () => await fetchGlobal(),
@@ -24,6 +25,14 @@ const Root = () => {
     queryKey: ["order"],
     queryFn: async () =>
       await sanityClient.fetch<IOrder[]>(orderQuery, {
+        dateRange: {
+          gte: new Date(`${year}-${month}-01`),
+          lt: new Date(`${year}-${Number(month) + 1}-01`),
+        },
+
+        // date: `${year}-${month}`,
+        // year: year,
+        // month: month,
         start: 0,
         limit: 5,
         // start: 0,
@@ -37,7 +46,8 @@ const Root = () => {
   console.log(data);
   return (
     <>
-      <CreateButton datasource={data} />
+      {/* <MonthPicker month={month} /> */}
+      {/* <CreateButton datasource={data} /> */}
 
       <ProductModal>
         <OrderForm
