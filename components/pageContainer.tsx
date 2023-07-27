@@ -3,8 +3,9 @@
 import { signOut, useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { useEffect } from "react";
-import Avatar from "~components/Layout/Avatar";
-import SideNav from "~components/Layout/SideNav";
+import Avatar from "~components/CherryUI/Avatar";
+import SideNav from "./CherryUI/SideNav";
+
 const PageContainer = ({ children }: { children: React.ReactNode }) => {
   // console.log("reRender");
   const { data, status } = useSession();

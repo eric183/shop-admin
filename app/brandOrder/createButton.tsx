@@ -1,6 +1,6 @@
 "use client";
 
-import { GradientButton } from "~components/Buttons";
+import { GradientButton } from "~components/CherryUI/Buttons";
 import { modalStore } from "../../components/Layout/Modal";
 import { IOrder } from "~types/order";
 

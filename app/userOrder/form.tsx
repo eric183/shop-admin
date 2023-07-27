@@ -4,10 +4,6 @@ import clsx from "clsx";
 import spu from "~base/sanity/schemas/spu";
 import { v4 as uuidv4 } from "uuid";
 
-import GoogleUploader, {
-  useUploadingStore,
-} from "~components/Layout/GoogleUploader";
-import { modalStore } from "../../components/Layout/Modal";
 import React, { useState, useRef, useEffect } from "react";
 import { sanityMutationClient } from "~base/sanity/client";
 import { IProduct, Sku } from "~types/product";
@@ -22,6 +18,8 @@ import {
   updateOrderItem,
 } from "~app/api/sanityRest/order";
 import { createAccount } from "~app/api/sanityRest/account";
+import { useUploadingStore } from "~components/CherryUI/GoogleUploader";
+import { modalStore } from "~components/CherryUI/Modal";
 
 interface Props {
   datasource: IOrder[];

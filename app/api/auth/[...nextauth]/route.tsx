@@ -38,8 +38,6 @@ export const authOptions: NextAuthOptions = {
           password,
         });
 
-        console.log(user, "......");
-
         if (user.length > 0) {
           return user[0];
         }

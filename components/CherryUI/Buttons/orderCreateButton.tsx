@@ -1,6 +1,6 @@
 "use client";
 
-import { GradientButton } from "~components/Buttons";
+import { GradientButton } from "~components/CherryUI/Buttons";
 import { IOrder, IOrderCreateSource } from "~types/order";
 import clsx from "clsx";
 import { FC, useState } from "react";
@@ -8,7 +8,7 @@ import BrandOrderForm from "~app/brandOrder/form";
 import { useQuery } from "@tanstack/react-query";
 import { fetchGlobal } from "~app/api/sanityRest/global";
 import { Modal } from "antd";
-import { modalStore } from "~components/Layout/Modal";
+import { modalStore } from "../Modal";
 
 interface Props {
   datasource?: IOrder[];
@@ -43,7 +43,7 @@ const OrderCreateButton: FC<Props> = ({ datasource, className }) => {
           setModalType("create");
         }}
       >
-        订单添加
+        新建订单
       </GradientButton>
 
       <CherryVisionModal setOpen={setOpen} open={open}>

@@ -6,7 +6,7 @@ import clsx from "clsx";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import RoutePaths from "~base/NavPaths";
-import OrderCreateButton from "~components/Buttons/orderCreateButton";
+import OrderCreateButton from "~components/CherryUI/Buttons/orderCreateButton";
 
 const SideNav = () => {
   const pathname = usePathname();

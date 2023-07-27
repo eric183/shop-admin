@@ -99,3 +99,7 @@ div:has(> .content-embed) {
 .ant-image-img {
   object-fit: contain;
 }
+
+span.ant-switch-inner {
+  border: 1px solid lightgray;
+}

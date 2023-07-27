@@ -6,7 +6,7 @@ import { IOrder } from "~types/order";
 import { IProduct } from "~types/product";
 import { Button, Image } from "antd";
 import { useState } from "react";
-import { modalStore } from "../../components/Layout/Modal";
+import { modalStore } from "~components/CherryUI/Modal";
 
 const useColumns = () => {
   // const [record, setEditRecord] = useState<IProduct | null>(null);

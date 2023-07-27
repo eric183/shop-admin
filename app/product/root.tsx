@@ -2,15 +2,15 @@
 
 import { ColumnsType } from "antd/es/table";
 import { useState } from "react";
-import CherryTable from "~components/CherryViews/Table";
+import CherryTable from "~components/CherryUI/Table";
 import { IProduct } from "~types/product";
 import useColumns from "./columns";
 import { useQuery } from "@tanstack/react-query";
-import ProductModal from "../../components/Layout/Modal";
 import CreateButton from "./createButton";
 import ProductForm from "./form";
 import productQuery from "~app/api/groqs/product";
 import { sanityClient } from "~base/sanity/client";
+import CherryVisionModal from "~components/CherryUI/Modal";
 
 const Root = () => {
   const { data, status, refetch } = useQuery({
@@ -28,9 +28,9 @@ const Root = () => {
     <>
       <CreateButton datasource={data ? data : []} />
 
-      <ProductModal>
+      <CherryVisionModal>
         <ProductForm datasource={data ? data : []} refetch={refetch} />
-      </ProductModal>
+      </CherryVisionModal>
       <section>
         <CherryTable<IProduct>
           datasource={data ? data : []}

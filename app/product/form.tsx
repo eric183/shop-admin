@@ -3,13 +3,13 @@ import { Select } from "antd";
 import clsx from "clsx";
 import { v4 as uuidv4 } from "uuid";
 
-import GoogleUploader, {
-  useUploadingStore,
-} from "~components/Layout/GoogleUploader";
-import { modalStore } from "../../components/Layout/Modal";
 import React, { useState, useRef, useEffect } from "react";
 import { IProduct, Sku } from "~types/product";
 import { createProduct, updateProduct } from "~app/api/sanityRest/product";
+import GoogleUploader, {
+  useUploadingStore,
+} from "~components/CherryUI/GoogleUploader";
+import { modalStore } from "~components/CherryUI/Modal";
 
 interface Props {
   datasource: IProduct[];
