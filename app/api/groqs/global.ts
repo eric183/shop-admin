@@ -5,6 +5,11 @@ const globalQuery = groq`*[_type == "user"]{
   "accounts": *[_type == "account"] { _id, username },
   "skus": *[_type == "sku"] { _id, attribute, "spu": *[_type == "spu" && _id == ^.spu._ref][0]{ "spuId": _id, name }  },
   "username": account->username,
+  "brands": *[_type == "brand"]{ 
+    _id,
+    name,
+    logo
+  },
 }[0]`;
 // "orderItems": orderItems[]-> {..., "sku": sku->, "spu": sku->spu},
 // "account": account-> {..., "avatar": avatar.asset->url},

@@ -12,7 +12,7 @@ const BrandOrder = async (props: {
     props.searchParams;
 
   return (
-    <div className="w-full h-full px-3 pt-6">
+    <div className="w-full h-full px-3 pt-3">
       <Breadcrumb month={month} year={year} />
       <div className="actions mb-3 flex justify-end">
         <YearPicker year={year} month={month} className="-translate-x-3/4" />

@@ -103,3 +103,15 @@ div:has(> .content-embed) {
 span.ant-switch-inner {
   border: 1px solid lightgray;
 }
+
+.ant-modal-header {
+  @apply flex flex-row items-center;
+}
+
+.group-one {
+  @apply ml-3;
+}
+
+.Toastify__toast-body {
+  @apply text-sm;
+}

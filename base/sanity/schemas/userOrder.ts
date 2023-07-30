@@ -35,13 +35,35 @@ export default defineType({
         },
       ],
     },
+    {
+      type: "array",
+      name: "shipments",
+      title: "Shipments",
+      of: [
+        {
+          type: "reference",
+          to: [
+            {
+              type: "shipment",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: "number",
+      name: "deposit",
+      title: "Deposit",
+      description: "定金",
+    },
 
-    // {
-    //   type: "number",
-    //   name: "deposit",
-    //   title: "Deposit",
-    //   description: "定金",
-    // },
+    {
+      type: "number",
+      name: "finalPayment",
+      title: "Final Payment",
+      initialValue: 0,
+      description: "尾款",
+    },
 
     {
       type: "string",

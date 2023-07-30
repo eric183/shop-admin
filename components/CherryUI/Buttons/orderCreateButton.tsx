@@ -52,6 +52,7 @@ const OrderCreateButton: FC<Props> = ({ datasource, className }) => {
             {
               accounts: reponseGlobal.data.accounts,
               skus: reponseGlobal.data.skus,
+              brands: reponseGlobal.data.brands,
             } as const as IOrderCreateSource
           }
           datasource={[]}

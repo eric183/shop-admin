@@ -5,12 +5,11 @@ import Link from "next/link";
 import { IOrder } from "~types/order";
 import { Button, Drawer, Image, Popconfirm, Tooltip } from "antd";
 import { useState } from "react";
-
+import { modalStore } from "../../components/Layout/Modal";
 import { deleteOrder } from "~app/api/sanityRest/order";
 import { useQueryClient } from "@tanstack/react-query";
 import { drawStore } from "./drawer";
 import dayjs from "dayjs";
-import { modalStore } from "~components/CherryUI/Modal";
 const useColumns = (refetch: () => void) => {
   const queryClient = useQueryClient();
   // const [record, setEditRecord] = useState<IOrder | null>(null);

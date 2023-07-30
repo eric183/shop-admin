@@ -13,6 +13,12 @@ export default defineType({
     }),
     defineField({
       type: "string",
+      name: "logo",
+      title: "Logo",
+      // hidden: true,
+    }),
+    defineField({
+      type: "string",
       name: "officialSite",
       title: "OfficialSite",
       hidden: true,

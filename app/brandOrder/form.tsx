@@ -4,10 +4,10 @@ import {
   ArrowLeftCircleIcon,
   ArrowRightCircleIcon,
 } from "@heroicons/react/20/solid";
-import { Select, Switch } from "antd";
+import { Pagination, Select, Switch } from "antd";
 import clsx from "clsx";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, ElementRef } from "react";
 import { IProduct, Sku } from "~types/product";
 import { IOrder, IOrderCreateSource, OrderStatus } from "~types/order";
 import {
@@ -19,6 +19,9 @@ import { createAccount } from "~app/api/sanityRest/account";
 import { useUploadingStore } from "~components/CherryUI/GoogleUploader";
 import { modalStore } from "~components/CherryUI/Modal";
 import { motion } from "framer-motion";
+import { Tube } from "@react-three/drei";
+import ReactDOM from "react-dom";
+import { ToastContainer, toast } from "react-toastify";
 
 interface Props {
   datasource: IOrder[];
@@ -64,8 +67,18 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
     ],
   } as IOrderFormDto;
 
+  const selectRef = useRef<any>();
+  const paginationRef = useRef<any>(null!);
   const { setModalType, modalType } = modalStore();
   const [matchSPU, setMatchSPU] = useState<IProduct>(null!);
+  const [selectBrand, setSelectBrand] = useState<{
+    name: string;
+    _id: string;
+    logo?: string;
+  }>({
+    name: "",
+    _id: "",
+  });
   const { clearImageUrls, imageUrls, setImageUrls } = useUploadingStore();
 
   // const [order, setOrder] = useState<IOrderFormDto>(defaultOrder);
@@ -75,6 +88,7 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
   ]);
 
   const [orderIndex, setOrderIndex] = useState<number>(0);
+  const [domReady, setDomReady] = React.useState(false);
 
   const {
     open,
@@ -85,9 +99,7 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
     setRecord,
   } = modalStore();
 
-  const selectRef = useRef<any>();
-
-  const spu = datasource;
+  // const spu = datasource;
 
   const createAccountHandler = ({ username, isNew }: any) => {
     createAccount({ username });
@@ -178,9 +190,14 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
     }
   }, [open, record]);
 
-  const { accounts, skus } = createSource;
-  // console.log(order, "order...", accounts, "accounts...");
-  console.log(orderIndex);
+  useEffect(() => {
+    setDomReady(true);
+  }, []);
+
+  const { accounts, skus, brands } = createSource;
+  console.log(brands, "brands");
+  // console.log(orderIndex, brandOrders, "brandOrders...");
+
   return (
     <article className="flex flex-row">
       <ArrowLeftCircleIcon
@@ -195,40 +212,89 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
           }
         }}
       />
-      {brandOrders.map((order, index) => (
-        <motion.form
-          className="flex flex-col mx-2"
-          onSubmit={formSubitHandler}
-          key={index}
-          initial={orderIndex === index ? "visible" : "hidden"}
-          animate={orderIndex === index ? "visible" : "hidden"}
-          variants={{
-            hidden: { opacity: 0 },
-            visible: {
-              opacity: 1,
-              transition: {
-                delayChildren: 0.3,
-                staggerChildren: 0.2,
-              },
+      {domReady &&
+        ReactDOM.createPortal(
+          <div className="relative z-0 w-60 group group-one">
+            {/* <label
+                    htmlFor="name"
+                    className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                  >
+                    品牌
+                  </label> */}
+            <Select
+              mode="tags"
+              size="small"
+              maxTagCount={1}
+              placeholder="请选择品牌"
+              onChange={(detail, de) => {
+                const foundAccount = accounts.find(
+                  (item) => item._id === detail[0]
+                );
+
+                // setOrder({
+                //   ...order,
+                //   account: foundAccount
+                //     ? foundAccount
+                //     : {
+                //         username: detail[0],
+                //         isNew: true,
+                //       },
+                // });
+
+                // selectRef.current.blur();
+              }}
+              className="w-full mt-2"
+              choiceTransitionName="name"
+              ref={selectRef}
+              // value={order.account?._id as any}
+              value={}
+            >
+              {brands.map((item, index: number) => (
+                <Select.Option key={index} value={item._id}>
+                  {item.name}
+                </Select.Option>
+              ))}
+            </Select>
+          </div>,
+          document.querySelector(".ant-modal-header")!
+        )}
+
+      <motion.form
+        className="flex flex-row mx-2 w-full overflow-hidden pb-10"
+        onSubmit={formSubitHandler}
+        initial={"hidden"}
+        animate={"visible"}
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: {
+              delayChildren: 0.3,
+              staggerChildren: 0.2,
             },
-          }}
-        >
-          {/* {orders.map((order, index) => {
+          },
+        }}
+      >
+        {/* {orders.map((order, index) => {
             return (
         
             );
           })} */}
+
+        {brandOrders.map((order, index) => (
           <motion.div
-            className="h-full"
+            key={index}
+            className="w-full h-full flex flex-col shrink-0"
+            animate={orderIndex === index ? "visible" : "hidden"}
             variants={{
               hidden: {
                 opacity: 0,
-                x: `${100 * index + 1}%`,
+                x: `${100 * index}%`,
                 transition: { duration: 0.2 },
               },
               visible: {
                 opacity: 1,
-                x: `-${100 * index + 1}%`,
+                x: `-${100 * index}%`,
                 // transition: { duration: 0.2, staggerChildren: 0.1 },
               },
             }}
@@ -525,46 +591,6 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                 定金
               </label>
             </div> */}
-            <div className="relative z-0 w-full mb-6 group">
-              <label
-                htmlFor="name"
-                className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-              >
-                品牌
-              </label>
-              <Select
-                mode="tags"
-                maxTagCount={1}
-                placeholder="Please select a brand"
-                onChange={(detail, de) => {
-                  const foundAccount = accounts.find(
-                    (item) => item._id === detail[0]
-                  );
-
-                  setOrder({
-                    ...order,
-                    account: foundAccount
-                      ? foundAccount
-                      : {
-                          username: detail[0],
-                          isNew: true,
-                        },
-                  });
-
-                  selectRef.current.blur();
-                }}
-                className="w-full mt-2"
-                choiceTransitionName="name"
-                ref={selectRef}
-                value={order.account?._id as any}
-              >
-                {accounts.map((item, index: number) => (
-                  <Select.Option key={index} value={item._id}>
-                    {item.username}
-                  </Select.Option>
-                ))}
-              </Select>
-            </div>
 
             <div className="relative z-0 w-full mb-6 group">
               <input
@@ -616,53 +642,109 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
               </Select>
             </div>
           </motion.div>
-          <button
-            type="submit"
-            className={clsx({
-              "inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white transition ease-in-out duration-150 self-end justify-around !cursor-pointer":
-                true,
-              "w-46 bg-indigo-500 hover:bg-indigo-400 cursor-not-allowed":
-                confirmLoading,
-              "w-38 bg-blue-700 hover:bg-blue-800 ": !confirmLoading,
-            })}
-            // disabled={confirmLoading ? true : false}
-          >
-            {confirmLoading && (
-              <svg
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  stroke-width="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-            )}
-
-            {confirmLoading ? "Processing..." : "提交"}
-          </button>
-        </motion.form>
-      ))}
+        ))}
+      </motion.form>
 
       <ArrowRightCircleIcon
         className="w-8 fill-blue-400 cursor-pointer"
         onClick={() => {
-          setOrderIndex(orderIndex + 1);
+          // if (orderIndex === brandOrders.length - 1) {
+          //   return;
+          // }
+          // if (orderIndex === brandOrders.length - 2) {
+          //   setBrandOrders((state) => [...state, defaultOrder]);
+          // }
+          const currentIndex = orderIndex + 1;
+          setOrderIndex(currentIndex);
+          console.log(brandOrders.length);
+          if (currentIndex >= brandOrders.length) {
+            // alert('已经是最后一条了')
+            toast.info("新用户订单...", {
+              autoClose: 1000,
+            });
+            setBrandOrders((state) => [...state, defaultOrder]);
+          }
         }}
       />
+
+      <footer className="absolute bottom-2  w-full flex flex-row justify-between">
+        {/* <div className="max-w-7xl"> */}
+        <Pagination
+          defaultCurrent={1}
+          defaultPageSize={1}
+          current={orderIndex + 1}
+          total={brandOrders.length}
+          onChange={(page) => {
+            setOrderIndex(page - 1);
+          }}
+        />
+        {/* <Pagination current={orderIndex + 1} total={brandOrders.length + 5} /> */}
+        {/* <Pager current={orderIndex + 1} total={brandOrders.length + 5} /> */}
+        {/* </div> */}
+        <button
+          type="submit"
+          className={clsx({
+            "mr-8 shadow rounded-md bg-indigo-500": true,
+            "inline-flex px-4 py-2  leading-6 !cursor-pointer": true,
+            "font-semibold text-sm text-white": true,
+            "items-center self-end justify-around ": true,
+            "transition ease-in-out duration-150": true,
+            "w-46 hover:bg-indigo-400 cursor-not-allowed": confirmLoading,
+            "w-38 bg-blue-700 hover:bg-blue-800 ": !confirmLoading,
+          })}
+          // disabled={confirmLoading ? true : false}
+        >
+          {confirmLoading && (
+            <svg
+              className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+          )}
+
+          {confirmLoading ? "Processing..." : "提交"}
+        </button>
+      </footer>
     </article>
   );
+};
+
+function useForceUpdate() {
+  const [value, setState] = useState(true);
+
+  return () => setState(!value);
+}
+
+const Pager = ({ current, total }) => {
+  const [, updateState] = React.useState();
+  const forceUpdate = React.useCallback(() => updateState({}), []);
+
+  // const handleForceupdateMethod = useForceUpdate();
+  useEffect(() => {
+    console.log(total, "total");
+    forceUpdate();
+  }, [total]);
+
+  const Renders = React.useMemo(
+    () => <Pagination current={current} total={total} />,
+    [total]
+  );
+  return Renders;
 };
 
 export default BrandOrderForm;

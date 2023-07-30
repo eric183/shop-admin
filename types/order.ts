@@ -52,6 +52,11 @@ export interface IOrderCreateSource {
   _id: string;
   accounts: Account[];
   skus: Skus[];
+  brands: {
+    _id: string;
+    name: string;
+    logo: string;
+  }[];
   username: null;
 }
 

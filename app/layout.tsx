@@ -2,7 +2,6 @@ import * as React from "react";
 import type { Metadata } from "next";
 
 import "../styles/globals.css";
-import SideNav from "~components/Layout/SideNav";
 import Avatar from "~components/CherryUI/Avatar";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
