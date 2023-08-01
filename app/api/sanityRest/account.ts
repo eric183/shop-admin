@@ -12,6 +12,5 @@ export const createAccount = async ({ username }: { username: string }) => {
       },
     ],
   });
-
   return results;
 };

@@ -1,7 +1,7 @@
-import { IOrderFormDto } from "~app/userOrder/form";
 import { sanityMutationClient } from "~base/sanity/client";
 import { IOrder, IOrderCreateSource } from "~types/order";
 import { v4 as uuidv4 } from "uuid";
+import { IOrderFormDto } from "~app/brandOrder/form";
 
 export const createOrderSampler = async (order: any) => {
   const { account, deposit, finalPayment, orderStatus, sortNumber } = order;
@@ -61,55 +61,131 @@ export const createOrderSampler = async (order: any) => {
   });
 };
 
-export const createOrderItem = async (order: IOrderFormDto) => {
-  return await sanityMutationClient({
-    mutations: order.orderItems.map((orderItem) => ({
-      create: {
-        _type: "orderItem",
-        _id: uuidv4(),
-        sku: {
-          _type: "reference",
-          _ref: orderItem.sku._id,
-          // weak: true,
-        },
-        preOrderPrice: orderItem.preOrderPrice,
-        quantity: orderItem.quantity,
-        isProductionPurchased: orderItem.isProductionPurchased,
-        discount: orderItem.discount,
-      },
-    })),
-  });
-};
+export const createOrderItem = async (brandOrders: IOrderFormDto[]) => {
+  const userOrders: any = [];
 
-export const createOrder = async (order: IOrderFormDto, orderItems: any[]) => {
-  const { account, deposit, discount, finalPayment, orderStatus, sortNumber } =
-    order;
-
-  return await sanityMutationClient({
-    mutations: [
-      {
+  const accountArray: any = [];
+  brandOrders.map(() => ({
+    create: {},
+  }));
+  brandOrders.forEach((order) => {
+    order.orderItems.forEach((orderItem) => {
+      orderItem._id = uuidv4();
+      order.account._key = uuidv4();
+      userOrders.push({
         create: {
-          _type: "order",
-          _id: uuidv4(),
-          account: {
+          _type: "orderItem",
+          _id: orderItem._id,
+          sku: {
             _type: "reference",
-            _ref: account._id,
-            // weak: true,
+            _ref: orderItem.sku._id,
           },
-          deposit,
-          finalPayment,
-          orderItems: orderItems.map((orderItem) => ({
+          // account: {
+          //   _type: "reference",
+          //   _ref: order.account._id,
+          // },
+          preOrderPrice: orderItem.preOrderPrice,
+          quantity: orderItem.quantity,
+          isProductionPurchased: orderItem.isProductionPurchased,
+        },
+      });
+    });
+
+    userOrders.push({
+      create: {
+        _type: "userOrder",
+        _id: uuidv4(),
+        account: {
+          _type: "reference",
+          _ref: order.account._id,
+          _key: uuidv4(),
+        },
+        discount: order.discount,
+        finalPayment: order.finalPayment,
+        deposit: order.deposit,
+        // {
+        //   type: "number",
+        //   name: "discount",
+        //   title: "Discount",
+        //   initialValue: 0,
+        //   description: "折扣",
+        // },
+
+        // {
+        //   type: "number",
+        //   name: "finalPayment",
+        //   title: "Final Payment",
+        //   initialValue: 0,
+        //   description: "尾款",
+        // },
+
+        // {
+        //   type: "number",
+        //   name: "deposit",
+        //   title: "Deposit",
+        //   description: "定金",
+        // },
+        orderItems: order.orderItems.map((orderItem) => {
+          return {
             _type: "reference",
             _ref: orderItem._id,
             _key: uuidv4(),
-            // weak: true,
-          })),
-
-          orderStatus,
-          sortNumber,
-        },
+          };
+        }),
       },
-    ],
+    });
+  });
+
+  return await sanityMutationClient({
+    mutations: userOrders,
+  });
+
+  // mutations: order.orderItems.map((orderItem) => ({
+  //   create: {
+  //     _type: "orderItem",
+  //     _id: uuidv4(),
+  //     account: {
+  //       _type: "reference",
+  //       _ref: account._id,
+  //     },
+  //     sku: {
+  //       _type: "reference",
+  //       _ref: orderItem.sku._id,
+  //       // weak: true,
+  //     },
+  //     preOrderPrice: orderItem.preOrderPrice,
+  //     quantity: orderItem.quantity,
+  //     isProductionPurchased: orderItem.isProductionPurchased,
+  //     discount: orderItem.discount,
+  //   },
+  // })),
+};
+
+export const createOrder = async (
+  brand: Partial<IOrderCreateSource["brands"][0]>,
+  userOrders: IOrderFormDto["orderItems"]
+) => {
+  const formatOrder: any = [];
+
+  formatOrder.push({
+    create: {
+      _type: "brandOrder",
+      _id: uuidv4(),
+      brand: {
+        _type: "reference",
+        _ref: brand._id,
+      },
+      userOrders: userOrders.map((userOrder) => ({
+        _type: "reference",
+        _ref: userOrder._id,
+        _key: uuidv4(),
+      })),
+    },
+  });
+
+  debugger;
+  return await sanityMutationClient({
+    mutations: formatOrder,
   });
 };
 
@@ -237,7 +313,7 @@ export const updateOrder = async (
     }[];
   }
 ) => {
-  const { account, deposit, finalPayment, orderStatus, sortNumber } = order;
+  const { account, finalPayment, orderStatus, sortNumber } = order;
 
   const orderItems = response.results.map(
     (x) => x.document
@@ -260,7 +336,7 @@ export const updateOrder = async (
               _key: uuidv4(),
               // weak: true,
             })),
-            deposit,
+            // deposit,
             finalPayment,
             orderStatus,
             sortNumber,

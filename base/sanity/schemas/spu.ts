@@ -27,7 +27,6 @@ export default defineType({
       name: "images",
       title: "Images",
       options: {
-        isHighlighted: true,
         hotspot: true,
       },
       of: [

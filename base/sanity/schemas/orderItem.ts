@@ -5,12 +5,20 @@ export default defineType({
   title: "Order Item",
   type: "document",
   fields: [
+    // {
+    //   type: "reference",
+    //   name: "account",
+    //   title: "Account",
+    //   description: "用户",
+    //   to: [{ type: "account" }],
+    // },
     {
       name: "sku",
       title: "Order Sku",
       type: "reference",
       description: "订单商品",
       to: [{ type: "sku" }],
+      weak: true,
     },
     {
       type: "number",
@@ -26,28 +34,7 @@ export default defineType({
       initialValue: 0,
       description: "预订价格",
     },
-    {
-      type: "number",
-      name: "discount",
-      title: "Discount",
-      initialValue: 0,
-      description: "折扣",
-    },
 
-    {
-      type: "number",
-      name: "finalPayment",
-      title: "Final Payment",
-      initialValue: 0,
-      description: "尾款",
-    },
-
-    {
-      type: "number",
-      name: "deposit",
-      title: "Deposit",
-      description: "定金",
-    },
     // 该用户订购商品是否买到
     {
       type: "boolean",

@@ -22,7 +22,6 @@ export default defineType({
       name: "avatar",
       title: "Avatar",
       options: {
-        isHighlighted: true,
         hotspot: true,
       },
     },

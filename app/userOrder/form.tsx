@@ -20,30 +20,31 @@ import {
 import { createAccount } from "~app/api/sanityRest/account";
 import { useUploadingStore } from "~components/CherryUI/GoogleUploader";
 import { modalStore } from "~components/CherryUI/Modal";
+import { IOrderFormDto } from "~app/brandOrder/form";
 
 interface Props {
   datasource: IOrder[];
   createSource: IOrderCreateSource;
 }
 
-export interface IOrderFormDto {
-  _id?: string;
-  account: any;
-  sortNumber: number;
-  orderItems: {
-    _id?: string;
-    sku: Partial<Sku>;
-    quantity: number;
-    preOrderPrice: number;
-    isProductionPurchased: boolean;
-    discount: number;
-  }[];
-  shipments: any[];
-  deposit: number;
-  discount: number;
-  finalPayment: number;
-  orderStatus: OrderStatus;
-}
+// export interface IOrderFormDto {
+//   _id?: string;
+//   account: any;
+//   sortNumber: number;
+//   orderItems: {
+//     _id?: string;
+//     sku: Partial<Sku>;
+//     quantity: number;
+//     preOrderPrice: number;
+//     isProductionPurchased: boolean;
+//     discount: number;
+//   }[];
+//   shipments: any[];
+//   deposit: number;
+//   discount: number;
+//   finalPayment: number;
+//   orderStatus: OrderStatus;
+// }
 
 const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
   const { setModalType, modalType } = modalStore();
@@ -52,10 +53,10 @@ const OrderForm: React.FC<Props> = ({ datasource, createSource }) => {
 
   const [order, setOrder] = useState<IOrderFormDto>({
     account: {},
-    discount: 0,
+    // discount: 0,
     finalPayment: 0,
     orderStatus: "UNPAID",
-    deposit: 0,
+    // deposit: 0,
     shipments: [],
     sortNumber: 0,
     orderItems: [

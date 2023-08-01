@@ -29,15 +29,19 @@ export default defineType({
       of: [
         {
           type: "object",
-          name: "sku",
-          title: "SKU",
+          name: "inventorySku",
+          title: "Inventory Sku",
           fields: [
             {
               // type: "array",
-              type: "string",
-              name: "id",
-              title: "id",
-              validation: (Rule) => Rule.required(),
+              type: "reference",
+              name: "skuDetail",
+              title: "Sku Detail",
+              to: [
+                {
+                  type: "sku",
+                },
+              ],
               // weak: true,
             },
             {

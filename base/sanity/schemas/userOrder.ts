@@ -16,11 +16,6 @@ export default defineType({
       ],
     },
     {
-      type: "number",
-      name: "sortNumber",
-      title: "Sort Number",
-    },
-    {
       type: "array",
       name: "orderItems",
       title: "Order Items",
@@ -36,25 +31,11 @@ export default defineType({
       ],
     },
     {
-      type: "array",
-      name: "shipments",
-      title: "Shipments",
-      of: [
-        {
-          type: "reference",
-          to: [
-            {
-              type: "shipment",
-            },
-          ],
-        },
-      ],
-    },
-    {
       type: "number",
-      name: "deposit",
-      title: "Deposit",
-      description: "定金",
+      name: "discount",
+      title: "Discount",
+      initialValue: 0,
+      description: "折扣",
     },
 
     {
@@ -66,45 +47,10 @@ export default defineType({
     },
 
     {
-      type: "string",
-      name: "orderStatus",
-      title: "Order Status",
-      initialValue: "UNPAID",
-      validation: (Rule) => Rule.required(),
-      options: {
-        list: [
-          // 未支付
-          {
-            title: "Unpaid",
-            value: "UNPAID",
-          },
-          // 定金
-          {
-            title: "HalfPaid",
-            value: "HALFPAID",
-          },
-          // 尾款
-          {
-            title: "Paid",
-            value: "PAID",
-          },
-          // 已发货
-          // {
-          //   title: "Shipped",
-          //   value: "SHIPPED",
-          // },
-          // // 已收货
-          // {
-          //   title: "Received",
-          //   value: "RECEIVED",
-          // },
-          // 已取消
-          {
-            title: "Cancelled",
-            value: "CANCELLED",
-          },
-        ],
-      },
+      type: "number",
+      name: "deposit",
+      title: "Deposit",
+      description: "定金",
     },
   ],
   preview: {

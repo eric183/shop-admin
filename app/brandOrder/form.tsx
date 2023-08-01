@@ -22,6 +22,7 @@ import { motion } from "framer-motion";
 import { Tube } from "@react-three/drei";
 import ReactDOM from "react-dom";
 import { ToastContainer, toast } from "react-toastify";
+import brand from "~base/sanity/schemas/brand";
 
 interface Props {
   datasource: IOrder[];
@@ -32,17 +33,21 @@ export interface IOrderFormDto {
   _id?: string;
   account: any;
   sortNumber: number;
+  brand?: {
+    _id: string;
+    name: string;
+  };
   orderItems: {
     _id?: string;
     sku: Partial<Sku>;
     quantity: number;
     preOrderPrice: number;
     isProductionPurchased: boolean;
-    discount: number;
   }[];
   shipments: any[];
-  deposit: number;
   discount: number;
+  deposit: number;
+  // discount: number;
   finalPayment: number;
   orderStatus: OrderStatus;
 }
@@ -50,35 +55,34 @@ export interface IOrderFormDto {
 const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
   const defaultOrder = {
     account: {},
-    discount: 0,
+    // discount: 0,
     finalPayment: 0,
     orderStatus: "UNPAID",
-    deposit: 0,
     shipments: [],
     sortNumber: 0,
+    deposit: 0,
+    discount: 0,
     orderItems: [
       {
         sku: {},
-        quantity: 0,
+        quantity: 1,
         preOrderPrice: 0,
         isProductionPurchased: false,
-        discount: 0,
       },
     ],
   } as IOrderFormDto;
+  const { accounts, skus, brands } = createSource;
 
   const selectRef = useRef<any>();
+  const brandSelectRef = useRef<any>();
   const paginationRef = useRef<any>(null!);
   const { setModalType, modalType } = modalStore();
   const [matchSPU, setMatchSPU] = useState<IProduct>(null!);
-  const [selectBrand, setSelectBrand] = useState<{
+  const [selectedBrand, setSelectedBrand] = useState<{
     name: string;
     _id: string;
     logo?: string;
-  }>({
-    name: "",
-    _id: "",
-  });
+  }>(null!);
   const { clearImageUrls, imageUrls, setImageUrls } = useUploadingStore();
 
   // const [order, setOrder] = useState<IOrderFormDto>(defaultOrder);
@@ -89,6 +93,8 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
 
   const [orderIndex, setOrderIndex] = useState<number>(0);
   const [domReady, setDomReady] = React.useState(false);
+  const [dynamicAccounts, setDynamicAccounts] =
+    useState<IOrderCreateSource["accounts"]>(accounts);
 
   const {
     open,
@@ -111,42 +117,51 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
 
     if (confirmLoading) return;
 
-    if (!order.account) {
-      window.alert("请输入客户名");
-      return;
-    }
+    // if (!order.account) {
+    //   window.alert("请输入客户名");
+    //   return;
+    // }
 
-    if (!order.orderItems) {
-      window.alert("请输入订单内容");
-      return;
-    }
+    // if (!order.orderItems) {
+    //   window.alert("请输入订单内容");
+    //   return;
+    // }
 
     // if (!order.shipments) {
     //   window.alert("请输入发货信息");
     //   return;
     // }
 
-    order.account = order.account.isNew
-      ? (await createAccount(order.account))[0].document
-      : order.account;
+    // debugger;
+
+    // order.account = order.account.isNew
+    //   ? (await createAccount(order.account))[0].document
+    //   : order.account;
 
     if (modalType === "create") {
-      const orderItemsRs = await createOrderItem(order);
+      const orderItemsRs = await createOrderItem(brandOrders);
+
       const orderRs = await createOrder(
-        order,
-        orderItemsRs.results.map((result: any) => result.document)
+        selectedBrand,
+        orderItemsRs.results
+          .filter(
+            (x: { document: { _type: "userOrder" | "orderItems" } }) =>
+              x.document._type === "userOrder"
+          )
+          .map((x: { document: [x: string] }) => x.document)
+
+        // orderItemsRs.results.map((result: any) => result.document)
       );
     }
 
     if (modalType === "update") {
-      // debugger
       const recordOrderIds = order.orderItems.map((item) => item._id);
 
       const currentOrders = order.orderItems.filter(
         (item) => !recordOrderIds.includes(item._id)
       );
 
-      const orderItemsRs = await updateOrderItem(order, record);
+      const orderItemsRs = await updateOrderItem(brandOrders, record);
 
       // const orderRs = await updateOrder(
       //   order,
@@ -163,24 +178,25 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
   };
 
   const clearForm = async () => {
-    setOrder({
-      account: {},
-      discount: 0,
-      finalPayment: 0,
-      orderStatus: "UNPAID",
-      deposit: 0,
-      shipments: [],
-      sortNumber: 0,
-      orderItems: [
-        {
-          sku: {},
-          quantity: 0,
-          preOrderPrice: 0,
-          isProductionPurchased: false,
-          discount: 0,
-        },
-      ],
-    });
+    setBrandOrders([defaultOrder]);
+    // setOrder({
+    //   account: {},
+    //   discount: 0,
+    //   finalPayment: 0,
+    //   orderStatus: "UNPAID",
+    //   deposit: 0,
+    //   shipments: [],
+    //   sortNumber: 0,
+    //   orderItems: [
+    //     {
+    //       sku: {},
+    //       quantity: 0,
+    //       preOrderPrice: 0,
+    //       isProductionPurchased: false,
+    //       discount: 0,
+    //     },
+    //   ],
+    // });
   };
 
   useEffect(() => {
@@ -194,8 +210,7 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
     setDomReady(true);
   }, []);
 
-  const { accounts, skus, brands } = createSource;
-  console.log(brands, "brands");
+  // console.log(brands, "brands");
   // console.log(orderIndex, brandOrders, "brandOrders...");
 
   return (
@@ -212,6 +227,7 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
           }
         }}
       />
+
       {domReady &&
         ReactDOM.createPortal(
           <div className="relative z-0 w-60 group group-one">
@@ -227,27 +243,18 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
               maxTagCount={1}
               placeholder="请选择品牌"
               onChange={(detail, de) => {
-                const foundAccount = accounts.find(
+                const foundBrand = brands.find(
                   (item) => item._id === detail[0]
                 );
 
-                // setOrder({
-                //   ...order,
-                //   account: foundAccount
-                //     ? foundAccount
-                //     : {
-                //         username: detail[0],
-                //         isNew: true,
-                //       },
-                // });
+                setSelectedBrand(foundBrand!);
 
-                // selectRef.current.blur();
+                brandSelectRef.current.blur();
               }}
               className="w-full mt-2"
               choiceTransitionName="name"
-              ref={selectRef}
-              // value={order.account?._id as any}
-              value={}
+              ref={brandSelectRef}
+              value={selectedBrand?._id}
             >
               {brands.map((item, index: number) => (
                 <Select.Option key={index} value={item._id}>
@@ -310,29 +317,33 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                 mode="tags"
                 maxTagCount={1}
                 placeholder="Please select a person"
-                onChange={(detail, de) => {
+                onChange={async (detail, de) => {
                   const foundAccount = accounts.find(
                     (item) => item._id === detail[0]
                   );
-
-                  setOrder({
-                    ...order,
-                    account: foundAccount
-                      ? foundAccount
-                      : {
+                  const _account = foundAccount
+                    ? foundAccount
+                    : (
+                        await createAccount({
                           username: detail[0],
-                          isNew: true,
-                        },
+                        })
+                      )[0].document;
+
+                  setBrandOrders((prev) => {
+                    const newOrders = [...prev];
+                    newOrders[index].account = _account;
+                    return newOrders;
                   });
 
+                  setDynamicAccounts((prev) => [...prev, _account]);
                   selectRef.current.blur();
                 }}
                 className="w-full mt-2"
-                choiceTransitionName="name"
+                choiceTransitionName="username"
                 ref={selectRef}
                 value={order.account?._id as any}
               >
-                {accounts.map((item, index: number) => (
+                {dynamicAccounts.map((item, index: number) => (
                   <Select.Option key={index} value={item._id}>
                     {item.username}
                   </Select.Option>
@@ -340,7 +351,7 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
               </Select>
             </div>
 
-            <div className="relative z-0 w-full mb-6 group">
+            <div className="relative z-0 w-full mb-6 group border border-gray-300 rounded-md px-2 py-2 drop-shadow-md shadow-gray-500">
               <label className="flex flex-row items-center peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
                 <span className="flex-shrink-0">商品列表</span>
                 <PlusCircleIcon
@@ -354,265 +365,272 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                     // const currentOrders = ];
                     currentOrderItems.push({
                       sku: {},
-                      quantity: 0,
+                      quantity: 1,
                       preOrderPrice: 0,
                       isProductionPurchased: false,
-                      discount: 0,
                     });
 
-                    setOrder({
-                      ...order,
-                      orderItems: currentOrderItems,
+                    setBrandOrders((prev) => {
+                      const newOrders = [...prev];
+                      newOrders[index].orderItems = currentOrderItems;
+                      return newOrders;
                     });
+
+                    // setOrder({
+                    //   ...order,
+                    //   orderItems: currentOrderItems,
+                    // });
                   }}
                 />
               </label>
               <div className="my-12"></div>
-              {order.orderItems?.map((orderItem, orderItemIndex) => (
-                <div
-                  // className="grid md:grid-cols-5 md:gap-6 pl-8"
-                  className="flex flex-col border border-gray-200 rounded-md px-8 pt-6 mb-3 relative drop-shadow-md shadow-gray-500"
-                  key={orderItemIndex}
-                >
-                  <MinusCircleIcon
-                    className="absolute left-1 top-3 hover:fill-blue-500 cursor-pointer transition"
-                    width={18}
-                    color="gray"
-                    onClick={() => {
-                      const currentOrderItems = [...order.orderItems];
-                      currentOrderItems.splice(orderItemIndex, 1);
+              <ul className="max-h-56 overflow-y-auto">
+                {order.orderItems?.map((orderItem, orderItemIndex) => (
+                  <li
+                    key={orderItemIndex}
+                    className="relative flex flex-col px-8 pt-6 mb-3 drop-shadow-md shadow-gray-500 border border-gray-200 rounded-md"
+                  >
+                    <MinusCircleIcon
+                      className="absolute left-1 top-3 hover:fill-blue-500 cursor-pointer transition"
+                      width={18}
+                      color="gray"
+                      onClick={() => {
+                        const currentOrderItems = [...order.orderItems];
+                        currentOrderItems.splice(orderItemIndex, 1);
+                        setBrandOrders((prev) => {
+                          const newOrders = [...prev];
+                          newOrders[index].orderItems = currentOrderItems;
+                          return newOrders;
+                        });
+                        // setOrder({
+                        //   ...order,
+                        //   orderItems: currentOrderItems,
+                        // });
+                      }}
+                    />
 
-                      setOrder({
-                        ...order,
-                        orderItems: currentOrderItems,
-                      });
-                    }}
-                  />
+                    <section className="flex flex-row">
+                      {/* 产品名称 */}
+                      <div className="relative z-0 w-full group flex flex-col justify-center">
+                        <label
+                          htmlFor="name"
+                          className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                        >
+                          产品名称
+                        </label>
+                        <Select
+                          placeholder="Please select"
+                          onChange={(detail, de) => {
+                            const currentOrderItems = [...order.orderItems];
 
-                  <section className="flex flex-row">
-                    {/* 产品名称 */}
-                    <div className="relative z-0 w-full group flex flex-col justify-center">
-                      <label
-                        htmlFor="name"
-                        className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                      >
-                        产品名称
-                      </label>
-                      <Select
-                        placeholder="Please select"
-                        onChange={(detail, de) => {
-                          const currentOrderItems = [...order.orderItems];
+                            currentOrderItems[orderItemIndex].sku = skus.find(
+                              (sku) => sku._id === detail
+                            )!;
 
-                          currentOrderItems[orderItemIndex].sku = skus.find(
-                            (sku) => sku._id === detail
-                          )!;
-                          setOrder({
-                            ...order,
-                            orderItems: currentOrderItems,
-                          });
-                        }}
-                        className="w-full"
-                        size="small"
-                        choiceTransitionName="name"
-                        ref={selectRef}
-                        value={orderItem.sku._id}
-                      >
-                        {skus.map((item, index: number) => (
-                          <Select.Option key={index} value={item._id}>
-                            {item.spu.name +
-                              " " +
-                              item.attribute.color +
-                              " " +
-                              item.attribute.size}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </div>
-                    <div className="relative z-0 w-full mb-3 group flex flex-col items-center">
-                      <Switch
-                        className="text-center mx-auto inline-block border-4 border-cyan-600 mt-5 !bg-[#00000040)]"
-                        checked={orderItem.isProductionPurchased}
-                        onChange={(detail) => {
-                          const currentOrderItems = [...order.orderItems];
-                          currentOrderItems[
-                            orderItemIndex
-                          ].isProductionPurchased = detail;
-                          setOrder({
-                            ...order,
-                            orderItems: currentOrderItems,
-                          });
-                        }}
-                      />
-                      <label
-                        htmlFor="preOrderPrice"
-                        className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                      >
-                        商品是否买到
-                      </label>
-                    </div>
-                  </section>
+                            setBrandOrders((prev) => {
+                              const newOrders = [...prev];
+                              newOrders[index].orderItems = currentOrderItems;
+                              return newOrders;
+                            });
+                            // setOrder({
+                            //   ...order,
+                            //   orderItems: currentOrderItems,
+                            // });
+                          }}
+                          className="w-full"
+                          size="small"
+                          choiceTransitionName="name"
+                          ref={selectRef}
+                          value={orderItem.sku._id}
+                        >
+                          {skus.map((item, index: number) => (
+                            <Select.Option key={index} value={item._id}>
+                              {item.spu.name +
+                                " " +
+                                item.attribute.color +
+                                " " +
+                                item.attribute.size}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </div>
+                      <div className="relative z-0 w-full mb-3 group flex flex-col items-center">
+                        <Switch
+                          className="text-center mx-auto inline-block border-4 border-cyan-600 mt-5 !bg-[#00000040)]"
+                          checked={orderItem.isProductionPurchased}
+                          onChange={(detail) => {
+                            const currentOrderItems = [...order.orderItems];
+                            currentOrderItems[
+                              orderItemIndex
+                            ].isProductionPurchased = detail;
+                            setBrandOrders((prev) => {
+                              const newOrders = [...prev];
+                              newOrders[index].orderItems = currentOrderItems;
+                              return newOrders;
+                            });
+                          }}
+                        />
+                        <label
+                          htmlFor="preOrderPrice"
+                          className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                        >
+                          商品是否买到
+                        </label>
+                      </div>
+                    </section>
 
-                  <i className="mt-3 mb-5 border-b-2 border-gray-400 border-dashed"></i>
-                  <section className="grid grid-cols-4 gap-3">
-                    {/* 产品数量 */}
-                    <div className="relative z-0 w-full mb-3 group">
-                      <input
-                        type="text"
-                        onChange={(event) => {
-                          const currentOrderItems = [...order.orderItems];
-                          currentOrderItems[orderItemIndex].quantity =
-                            parseFloat(event.target.value);
-                          setOrder({
-                            ...order,
-                            orderItems: currentOrderItems,
-                          });
-                        }}
-                        name={`quantity_${orderItemIndex}`}
-                        id="attribute_color"
-                        className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                        placeholder=" "
-                        required
-                        value={orderItem.quantity}
-                      />
-                      <label
-                        htmlFor="attribute_color"
-                        className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                      >
-                        数量
-                      </label>
-                    </div>
+                    <i className="mt-3 mb-5 border-b-2 border-gray-400 border-dashed"></i>
+                    <section className="grid grid-cols-4 gap-3">
+                      {/* 产品数量 */}
+                      <div className="relative z-0 w-full mb-3 group">
+                        <input
+                          type="text"
+                          onChange={(event) => {
+                            const currentOrderItems = [...order.orderItems];
+                            currentOrderItems[orderItemIndex].quantity =
+                              parseFloat(event.target.value);
 
-                    {/* 预订价格 */}
-                    <div className="relative z-0 w-full mb-3 group">
-                      <input
-                        type="number"
-                        onChange={(event) => {
-                          const currentOrderItems = [...order.orderItems];
-                          currentOrderItems[orderItemIndex].preOrderPrice =
-                            parseFloat(event.target.value);
-                          setOrder({
-                            ...order,
-                            orderItems: currentOrderItems,
-                          });
-                        }}
-                        name={`preOrderPrice_${orderItemIndex}`}
-                        id="preOrderPrice"
-                        className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                        placeholder=" "
-                        required
-                        value={orderItem.preOrderPrice}
-                      />
-                      <label
-                        htmlFor="preOrderPrice"
-                        className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                      >
-                        预定价格
-                      </label>
-                    </div>
+                            setBrandOrders((prev) => {
+                              const newOrders = [...prev];
+                              newOrders[index].orderItems = currentOrderItems;
+                              return newOrders;
+                            });
+                          }}
+                          name={`quantity_${orderItemIndex}`}
+                          id="attribute_color"
+                          className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                          placeholder=" "
+                          required
+                          value={orderItem.quantity}
+                        />
+                        <label
+                          htmlFor="attribute_color"
+                          className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                        >
+                          数量
+                        </label>
+                      </div>
 
-                    {/* 折扣 */}
-                    <div className="relative z-0 w-full mb-3 group">
-                      <input
-                        type="number"
-                        name={`discount_${orderItemIndex}`}
-                        id={`discount_${orderItemIndex}`}
-                        className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                        placeholder=" "
-                        value={orderItem.discount}
-                        onChange={(event) => {
-                          const currentOrderItems = [...order.orderItems];
-                          currentOrderItems[orderItemIndex].discount =
-                            parseFloat(event.target.value);
-                          setOrder({
-                            ...order,
-                            orderItems: currentOrderItems,
-                          });
-
-                          setOrder({
-                            ...order,
-                            discount: parseFloat(event.target.value),
-                          });
-                        }}
-                      />
-                      <label
-                        htmlFor={`discount_${orderItemIndex}`}
-                        className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                      >
-                        折扣
-                      </label>
-                    </div>
-
-                    {/* 定金 */}
-                    <div className="relative z-0 w-full mb-6 group">
-                      <input
-                        type="number"
-                        name="deposit"
-                        id="deposit"
-                        className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                        placeholder=" "
-                        value={order.deposit}
-                        onChange={(event) => {
-                          setOrder({
-                            ...order,
-                            deposit: parseFloat(event.target.value),
-                          });
-                        }}
-                      />
-                      <label
-                        htmlFor="deposit"
-                        className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                      >
-                        定金
-                      </label>
-                    </div>
-                  </section>
-                </div>
-              ))}
+                      {/* 预订价格 */}
+                      <div className="relative z-0 w-full mb-3 group">
+                        <input
+                          type="number"
+                          onChange={(event) => {
+                            const currentOrderItems = [...order.orderItems];
+                            currentOrderItems[orderItemIndex].preOrderPrice =
+                              parseFloat(event.target.value);
+                            setBrandOrders((prev) => {
+                              const newOrders = [...prev];
+                              newOrders[index].orderItems = currentOrderItems;
+                              return newOrders;
+                            });
+                          }}
+                          name={`preOrderPrice_${orderItemIndex}`}
+                          id="preOrderPrice"
+                          className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                          placeholder=" "
+                          required
+                          value={orderItem.preOrderPrice}
+                        />
+                        <label
+                          htmlFor="preOrderPrice"
+                          className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                        >
+                          预定价格
+                        </label>
+                      </div>
+                    </section>
+                  </li>
+                ))}
+              </ul>
             </div>
-            {/* <div className="relative z-0 w-full mb-6 group">
-              <input
-                type="number"
-                name="deposit"
-                id="deposit"
-                className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                placeholder=" "
-                value={order.deposit}
-                onChange={(event) => {
-                  setOrder({
-                    ...order,
-                    deposit: parseFloat(event.target.value),
-                  });
-                }}
-              />
-              <label
-                htmlFor="deposit"
-                className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-              >
-                定金
-              </label>
-            </div> */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="relative z-0 w-full mb-6 group">
+                <input
+                  type="number"
+                  name="deposit"
+                  id="deposit"
+                  className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                  placeholder=" "
+                  value={order.deposit}
+                  onChange={(event) => {
+                    // setOrder({
+                    //   ...order,
+                    //   deposit: parseFloat(event.target.value),
+                    // });
+                    setBrandOrders((prev) => {
+                      const newOrders = [...prev];
+                      newOrders[index].deposit = parseFloat(event.target.value);
+                      return newOrders;
+                    });
+                  }}
+                />
+                <label
+                  htmlFor="deposit"
+                  className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                >
+                  定金
+                </label>
+              </div>
+              <div className="relative z-0 w-full mb-3 group">
+                <input
+                  type="number"
+                  name={`discount`}
+                  id={`discount`}
+                  className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                  placeholder=" "
+                  value={order.discount}
+                  onChange={(event) => {
+                    // setOrder({
+                    //   ...order,
+                    //   discount: parseFloat(event.target.value),
+                    // });
+                    setBrandOrders((prev) => {
+                      const newOrders = [...prev];
+                      newOrders[index].discount = parseFloat(
+                        event.target.value
+                      );
+                      return newOrders;
+                    });
+                  }}
+                />
+                <label
+                  htmlFor={`discount`}
+                  className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                >
+                  折扣
+                </label>
+              </div>
+              <div className="relative z-0 w-full mb-6 group">
+                <input
+                  type="number"
+                  name="finalPayment"
+                  id="finalPayment"
+                  className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                  placeholder=" "
+                  value={order.finalPayment}
+                  onChange={(event) => {
+                    // setOrder({
+                    //   ...order,
+                    //   finalPayment: parseFloat(event.target.value),
+                    // });
 
-            <div className="relative z-0 w-full mb-6 group">
-              <input
-                type="number"
-                name="finalPayment"
-                id="finalPayment"
-                className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                placeholder=" "
-                value={order.finalPayment}
-                onChange={(event) => {
-                  setOrder({
-                    ...order,
-                    finalPayment: parseFloat(event.target.value),
-                  });
-                }}
-              />
-              <label
-                htmlFor="finalPayment"
-                className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-              >
-                尾款
-              </label>
+                    setBrandOrders((prev) => {
+                      const newOrders = [...prev];
+                      newOrders[index].finalPayment = parseFloat(
+                        event.target.value
+                      );
+                      return newOrders;
+                    });
+                  }}
+                />
+                <label
+                  htmlFor="finalPayment"
+                  className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                >
+                  尾款
+                </label>
+              </div>
             </div>
 
             <div className="relative z-0 w-full mb-3 group flex flex-col">
@@ -625,9 +643,15 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
               <Select
                 placeholder="Please select a status"
                 onChange={(detail) => {
-                  setOrder({
-                    ...order,
-                    orderStatus: detail,
+                  // setOrder({
+                  //   ...order,
+                  //   orderStatus: detail,
+                  // });
+
+                  setBrandOrders((prev) => {
+                    const newOrders = [...prev];
+                    newOrders[index].orderStatus = detail;
+                    return newOrders;
                   });
                 }}
                 className="w-full mt-2"
@@ -644,7 +668,6 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
           </motion.div>
         ))}
       </motion.form>
-
       <ArrowRightCircleIcon
         className="w-8 fill-blue-400 cursor-pointer"
         onClick={() => {
@@ -683,6 +706,7 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
         {/* </div> */}
         <button
           type="submit"
+          onClick={formSubitHandler}
           className={clsx({
             "mr-8 shadow rounded-md bg-indigo-500": true,
             "inline-flex px-4 py-2  leading-6 !cursor-pointer": true,
