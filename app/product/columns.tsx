@@ -13,6 +13,14 @@ const useColumns = () => {
   const { setOpen, setRecord, setModalType } = modalStore();
   const columns: ColumnsType<IProduct> = [
     {
+      title: "品牌",
+      dataIndex: "brand",
+      key: "brand",
+      render: (record) => {
+        return record.name;
+      },
+    },
+    {
       title: "商品图片",
       dataIndex: "imageURLs",
       key: "imageURLs",
@@ -31,11 +39,6 @@ const useColumns = () => {
           // </ul>
         );
       },
-    },
-    {
-      title: "品牌",
-      dataIndex: "brand",
-      key: "brand",
     },
     {
       title: "商品名",

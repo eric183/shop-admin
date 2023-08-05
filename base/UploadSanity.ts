@@ -22,7 +22,6 @@ export const SanityUploader = async (
           }
         );
         const { document } = await response.json();
-
         resolve(document);
       };
     });

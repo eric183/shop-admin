@@ -23,19 +23,23 @@ export const createSpuImages = async (
 };
 
 export const createProduct = async (_formData_: any) => {
-  const { name, category, brand, link, skus, images, inventory, _id } =
+  const { name, category, brand, link, skus, images, _id } =
     _formData_;
 
   const spuId = _id ? _id : uuidv4();
+  const brandID = brand._id ? brand._id : uuidv4();
 
   const mutations: any = [
     {
       createOrReplace: {
-        _type: "spu",
         _id: spuId,
+        _type: "spu",
         name,
         category,
-        brand,
+        brand: {
+          _type: "reference",
+          _ref: brandID,
+        },
         link,
         images,
       },
@@ -46,29 +50,30 @@ export const createProduct = async (_formData_: any) => {
     mutations.push(
       ...skus.map(({ _id, attribute, price }: any) => {
         const skuId = _id ? _id : uuidv4();
-        const foundInventory = inventory.find((i: any) =>
-          i.skus.find((x: any) => x?.id === skuId)
-        );
+        // const foundInventory = inventories.find((i: any) =>
+        //   i.skus.find((x: any) => x?.id === skuId)
+        // );
 
-        const inventoryId = foundInventory ? foundInventory._id : uuidv4();
+        debugger;
+        // const inventoryId = foundInventory ? foundInventory._id : uuidv4();
 
-        mutations.push({
-          createOrReplace: {
-            _type: "inventory",
-            _id: inventoryId,
-            spu: {
-              _type: "reference",
-              _ref: spuId,
-            },
-            skus: [
-              {
-                // _type: "reference",
-                _key: uuidv4(),
-                id: skuId,
-              },
-            ],
-          },
-        });
+        // mutations.push({
+        //   createOrReplace: {
+        //     _type: "inventory",
+        //     _id: inventoryId,
+        //     spu: {
+        //       _type: "reference",
+        //       _ref: spuId,
+        //     },
+        //     skus: [
+        //       {
+        //         // _type: "reference",
+        //         _key: uuidv4(),
+        //         id: skuId,
+        //       },
+        //     ],
+        //   },
+        // });
         return {
           createOrReplace: {
             _type: "sku",
@@ -84,6 +89,15 @@ export const createProduct = async (_formData_: any) => {
       })
     );
   }
+
+  mutations.push({
+    createOrReplace: {
+      _type: "brand",
+      _id: brandID,
+      name: brand.name,
+      ...brand,
+    },
+  });
 
   const { results } = await sanityMutationClient({ mutations });
   return results;

@@ -5,26 +5,31 @@ export interface IProduct {
   category: string;
   _createdAt: string;
   name: string;
-  brand: string;
+  brand: {
+    // [key: string]: string | number;
+    _id?: string;
+    logo?: string;
+    name: string;
+  };
   link: string;
   imageURLs: ImageURL[];
   skus: Sku[];
   _updatedAt: string;
   price: number;
-  inventory: {
-    _id: string;
-    _ref: string;
-    spu: {
-      _ref: string;
-    };
-    skus: {
-      _id: string;
-      id?: string;
-      sku: { _ref: string; _type: string };
-      _key: string;
-      _type: string;
-    }[];
-  }[];
+  // inventories: {
+  //   _id: string;
+  //   _ref: string;
+  //   spu: {
+  //     _ref: string;
+  //   };
+  //   skus: {
+  //     _id: string;
+  //     id?: string;
+  //     sku: { _ref: string; _type: string };
+  //     _key: string;
+  //     _type: string;
+  //   }[];
+  // }[];
 }
 
 interface ImageURL {
@@ -44,6 +49,7 @@ export interface Sku {
   _id?: string;
   _ref?: null;
   attribute: Attribute;
+  // quantity?: number;
 }
 
 interface Attribute {

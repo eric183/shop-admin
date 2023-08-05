@@ -1,7 +1,7 @@
 "use client";
 
 import { GradientButton } from "~components/CherryUI/Buttons";
-import { modalStore } from "../../components/Layout/Modal";
+import { modalStore } from "~components/CherryUI/Modal";
 import { IOrder } from "~types/order";
 
 interface Props {

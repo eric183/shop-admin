@@ -11,8 +11,15 @@ import ProductForm from "./form";
 import productQuery from "~app/api/groqs/product";
 import { sanityClient } from "~base/sanity/client";
 import CherryVisionModal from "~components/CherryUI/Modal";
+import { fetchGlobal } from "~app/api/sanityRest/global";
+import { IOrderCreateSource } from "~types/order";
 
 const Root = () => {
+  const reponseGlobal = useQuery({
+    queryKey: ["global"],
+    queryFn: async () => await fetchGlobal(),
+  });
+
   const { data, status, refetch } = useQuery({
     queryKey: ["product"],
     queryFn: async () =>
@@ -23,13 +30,25 @@ const Root = () => {
       }),
   });
   const [column] = useColumns();
+  if (status !== "success" || reponseGlobal.status !== "success") return null;
 
   return (
     <>
       <CreateButton datasource={data ? data : []} />
 
       <CherryVisionModal>
-        <ProductForm datasource={data ? data : []} refetch={refetch} />
+        <ProductForm
+          datasource={data ? data : []}
+          refetch={refetch}
+          createSource={
+            {
+              accounts: reponseGlobal.data.accounts,
+              globalSkus: reponseGlobal.data.skus,
+              brands: reponseGlobal.data.brands,
+              inventories: reponseGlobal.data.inventories,
+            } as const as IOrderCreateSource
+          }
+        />
       </CherryVisionModal>
       <section>
         <CherryTable<IProduct>

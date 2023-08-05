@@ -10,6 +10,13 @@ const globalQuery = groq`*[_type == "user"]{
     name,
     logo
   },
+  "inventories": *[_type == "inventory"]{
+    _id,
+    _ref,
+    _key,
+    spu,
+    skus
+  },
 }[0]`;
 // "orderItems": orderItems[]-> {..., "sku": sku->, "spu": sku->spu},
 // "account": account-> {..., "avatar": avatar.asset->url},

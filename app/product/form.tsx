@@ -10,15 +10,23 @@ import GoogleUploader, {
   useUploadingStore,
 } from "~components/CherryUI/GoogleUploader";
 import { modalStore } from "~components/CherryUI/Modal";
+import { IOrderCreateSource } from "~types/order";
 
 interface Props {
   datasource: IProduct[];
+  createSource: IOrderCreateSource;
   refetch: () => void;
 }
 // const ProductForm: React.FC<{
 //   datasource: IProduct[];
 // }> = ({ datasource }) => {
-const ProductForm: React.FC<Props> = ({ datasource, refetch }) => {
+const ProductForm: React.FC<Props> = ({
+  datasource,
+  refetch,
+  createSource,
+}) => {
+  const { brands, inventories, globalSkus } = createSource;
+  const brandSelectRef = useRef<any>(null!);
   const { setModalType, modalType } = modalStore();
   const [matchSPU, setMatchSPU] = useState<IProduct>(null!);
   const { clearImageUrls, imageUrls, setImageUrls } = useUploadingStore();
@@ -41,6 +49,8 @@ const ProductForm: React.FC<Props> = ({ datasource, refetch }) => {
     ],
   });
 
+  const GoogleUploaderRef = useRef<any>(null!);
+
   const selectRef = useRef<any>();
 
   const spu = datasource;
@@ -48,7 +58,7 @@ const ProductForm: React.FC<Props> = ({ datasource, refetch }) => {
   const defaultNameInit = (evt: string[]) => {
     const name = evt[0];
     const foundItem = spu.find((item: IProduct) => item.name === name);
-
+    debugger;
     if (foundItem) {
       setMatchSPU(foundItem);
 
@@ -68,7 +78,7 @@ const ProductForm: React.FC<Props> = ({ datasource, refetch }) => {
       ...prev,
       name,
       category: foundItem?.category || "",
-      brand: foundItem?.brand || "",
+      brand: foundItem?.brand || { name: "" },
       link: foundItem?.link || "",
       skus:
         foundItem?.skus && foundItem?.skus.length > 0
@@ -212,17 +222,36 @@ const ProductForm: React.FC<Props> = ({ datasource, refetch }) => {
       }
     );
 
+    const foundSPUData = spu.find((x) => x.name === formData.name);
+    debugger;
+    // x.skus.some((m) =>
+    //   formData?.skus?.some((j) => j.attribute.size === m.attribute.size)
+    // )
+    if (foundSPUData) {
+      const foundSku = foundSPUData.skus.find(
+        (x) => x.attribute.size === formData?.skus![0]?.attribute.size
+      );
+      // if (foundSku) {
+      //   window.alert("该尺码已经存在，请检查");
+      //   setConfirmLoading(false);
+      //   return;
+      // }
+    }
+    // debugger;
     // if (!matchSPU && modalType === "create") {
     if (modalType === "create") {
       // const results = await createSpu(formData);
 
       // _matchSPU = results[0].document;
+
       const createForm = {
         ...matchSPU,
         ...formData,
+        // inventories,
         images: imagesCreations,
       };
 
+      // debugger;
       await createProduct(createForm);
     }
 
@@ -256,7 +285,7 @@ const ProductForm: React.FC<Props> = ({ datasource, refetch }) => {
     setFormData({
       name: undefined,
       category: "",
-      brand: "",
+      brand: { name: "" },
       link: "",
       skus: [
         {
@@ -270,6 +299,27 @@ const ProductForm: React.FC<Props> = ({ datasource, refetch }) => {
     });
     setImageUrls([]);
     setMatchSPU(null!);
+  };
+
+  const pasteBinder = (e) => {
+    debugger;
+    const file = e.clipboardData.files[0];
+    GoogleUploaderRef.current.uploadHandler([file]);
+    // e.clipboardData.files[0]
+
+    // const pasteHandler = (e: any) => {
+    //   const pastedText = e.clipboardData.getData("text");
+    //   const pastedTextArray = pastedText.split("\n");
+    //   const filteredTextArray = pastedTextArray.filter(
+    //     (x) => x !== "" && x !== " "
+    //   );
+    //   const filteredText = filteredTextArray.join("\n");
+    //   const filteredTextArray2 = filteredText.split("\n");
+    //   const filteredText2 = filteredTextArray2.join("\n");
+    //   setEmbeddingPrompt(filteredText2);
+    // };
+
+    // window.addEventListener("paste", pasteHandler);
   };
 
   useEffect(() => {
@@ -287,9 +337,62 @@ const ProductForm: React.FC<Props> = ({ datasource, refetch }) => {
     }
   }, [open, record, modalType]);
 
+  console.log(datasource, "datasource!!!");
   return (
-    <form className="flex flex-col" onSubmit={formSubitHandler}>
-      <GoogleUploader />
+    <form
+      className="flex flex-col"
+      onSubmit={formSubitHandler}
+      onKeyUp={pasteBinder}
+      onPaste={pasteBinder}
+    >
+      <GoogleUploader ref={GoogleUploaderRef} />
+
+      <div className="relative z-0 w-full mb-3 mt-8 group">
+        <label
+          htmlFor="brand"
+          className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+        >
+          品牌
+        </label>
+        <Select
+          mode="tags"
+          size="small"
+          maxTagCount={1}
+          placeholder="请选择品牌"
+          onChange={(detail, de) => {
+            const foundBrand = brands.find((item) => item._id === detail[0]);
+
+            // setSelectedBrand(foundBrand!);
+            // if (!foundBrand) {
+            setFormData((prev) => ({
+              ...prev,
+              brand: foundBrand ? foundBrand : { name: detail[0]! },
+            }));
+            // }
+            brandSelectRef.current.blur();
+          }}
+          className="w-full mt-2"
+          choiceTransitionName="name"
+          ref={brandSelectRef}
+          value={formData.brand?._id}
+        >
+          {brands.map((item, index: number) => (
+            <Select.Option key={index} value={item._id}>
+              {item.name}
+            </Select.Option>
+          ))}
+        </Select>
+
+        {/* <input
+          type="brand"
+          name="brand"
+          id="brand"
+          className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+          placeholder=" "
+          value={formData.brand?._id}
+          onChange={inputChangeHandler}
+        /> */}
+      </div>
       {/* <SanityUploader /> */}
       <div className="relative z-0 w-full mb-3 mt-8 group flex flex-col">
         <label
@@ -300,13 +403,17 @@ const ProductForm: React.FC<Props> = ({ datasource, refetch }) => {
         </label>
         <Select
           mode="tags"
+          size="small"
           maxTagCount={1}
-          placeholder="Please select"
-          onChange={(event) => {
-            if (modalType === "create") {
-              defaultNameInit(event);
-              return;
-            }
+          placeholder="Please select a spu name"
+          onChange={(event, dd) => {
+            // if (modalType === "create") {
+            //   defaultNameInit(event);
+            //   return;
+            // }
+            // globalSkus.map((item) => item.)
+            // debugger;
+            // spu.find((item) => item.name === event[0]);
             setFormData({
               ...formData,
               name: event[0],
@@ -316,11 +423,12 @@ const ProductForm: React.FC<Props> = ({ datasource, refetch }) => {
             //   ...formData,
             //   name: event,
             // };
+            selectRef.current.blur();
           }}
           className="w-full mt-2"
           choiceTransitionName="name"
           ref={selectRef}
-          value={formData.name as any}
+          value={formData._id as any}
         >
           {spu.map((item: IProduct, index: number) => (
             <Select.Option key={index} value={item.name}>
@@ -370,7 +478,6 @@ const ProductForm: React.FC<Props> = ({ datasource, refetch }) => {
                 }));
               }}
             />
-
             <div className="relative z-0 w-full mb-3 group">
               <input
                 type="text"
@@ -428,23 +535,7 @@ const ProductForm: React.FC<Props> = ({ datasource, refetch }) => {
           </div>
         ))}
       </div>
-      <div className="relative z-0 w-full mb-6 group">
-        <input
-          type="brand"
-          name="brand"
-          id="brand"
-          className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-          placeholder=" "
-          value={formData.brand}
-          onChange={inputChangeHandler}
-        />
-        <label
-          htmlFor="brand"
-          className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-        >
-          品牌
-        </label>
-      </div>
+
       <div className="relative z-0 w-full mb-6 group">
         <input
           type="link"

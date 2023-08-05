@@ -1,6 +1,6 @@
 import { Upload, Modal, UploadFile } from "antd";
 import { RcFile } from "antd/es/upload";
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import useGoogleImage from "../../hooks/useGoogleUpload";
 import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
 import { create } from "zustand";
@@ -31,7 +31,7 @@ export const useUploadingStore = create<IGoogleUploaderProps>()((set) => ({
   clearImageUrls: () => set({ imageUrls: [] }),
 }));
 
-const GoogleUploader = () => {
+const GoogleUploader = forwardRef((props, ref) => {
   const { uploading, setUpload, imageUrls, setImageUrls, clearImageUrls } =
     useUploadingStore();
   const [loading, setLoading] = useState(false);
@@ -45,10 +45,13 @@ const GoogleUploader = () => {
   };
 
   const uploadHandler = async (fileList: RcFile[]) => {
+    
+    setLoading(true);
+    
     if (!fileList || fileList.length === 0) return;
     // const documents = await upload(fileList);
     const documents = await SanityUploader(fileList);
-
+   setLoading(false);
     const docs = documents.map((document) => ({
       ...document,
       url: document.url,
@@ -82,13 +85,20 @@ const GoogleUploader = () => {
   };
 
   const onChange = ({ fileList }: any) => {
-    // debugger;
+    debugger;
     clearImageUrls();
     setImageUrls(fileList.filter((f: ISanityDocument) => f._id));
   };
+
   useEffect(() => {
-    uploadHandler(uploadList);
+    if(uploadList.length > 0) {
+      uploadHandler(uploadList);
+    }
   }, [uploadList]);
+
+  useImperativeHandle(ref, () => ({
+    uploadHandler,
+  }));
 
   const uploadButton = (
     <div>
@@ -126,6 +136,6 @@ const GoogleUploader = () => {
       </Modal>
     </div>
   );
-};
+});
 
 export default GoogleUploader;

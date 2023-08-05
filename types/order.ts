@@ -48,10 +48,25 @@ interface Shipment {
   trackingNumber: string;
 }
 
+interface Inventory {
+  _id: string;
+  _ref: string;
+  spu: {
+    _ref: string;
+  };
+  skus: {
+    _id: string;
+    id?: string;
+    sku: { _ref: string; _type: string };
+    _key: string;
+    _type: string;
+  }[];
+}
 export interface IOrderCreateSource {
   _id: string;
   accounts: Account[];
-  skus: Skus[];
+  globalSkus: Skus[];
+  inventories: Inventory[];
   brands: {
     _id: string;
     name: string;
