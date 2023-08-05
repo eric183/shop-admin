@@ -11,6 +11,7 @@ import GoogleUploader, {
 } from "~components/CherryUI/GoogleUploader";
 import { modalStore } from "~components/CherryUI/Modal";
 import { IOrderCreateSource } from "~types/order";
+import { debug } from "console";
 
 interface Props {
   datasource: IProduct[];
@@ -26,9 +27,11 @@ const ProductForm: React.FC<Props> = ({
   createSource,
 }) => {
   const { brands, inventories, globalSkus } = createSource;
+  const products = datasource;
+
   const brandSelectRef = useRef<any>(null!);
   const { setModalType, modalType } = modalStore();
-  const [matchSPU, setMatchSPU] = useState<IProduct>(null!);
+  const [matchProduct, setMatchProduct] = useState<IProduct>(null!);
   const { clearImageUrls, imageUrls, setImageUrls } = useUploadingStore();
   const {
     open,
@@ -49,18 +52,17 @@ const ProductForm: React.FC<Props> = ({
     ],
   });
 
+  const [currentProducts, setCurrentProducts] = useState<IProduct[]>(products);
   const GoogleUploaderRef = useRef<any>(null!);
 
   const selectRef = useRef<any>();
 
-  const spu = datasource;
-
   const defaultNameInit = (evt: string[]) => {
     const name = evt[0];
-    const foundItem = spu.find((item: IProduct) => item.name === name);
-    debugger;
+    const foundItem = products.find((item: IProduct) => item.name === name);
+
     if (foundItem) {
-      setMatchSPU(foundItem);
+      setMatchProduct(foundItem);
 
       const currentImages = foundItem?.imageURLs
         ? foundItem?.imageURLs.map((i: any) => i.asset)
@@ -71,7 +73,7 @@ const ProductForm: React.FC<Props> = ({
       // setImages(currentImages);
     } else {
       // setImages(currentImages);
-      setMatchSPU(null!);
+      setMatchProduct(null!);
     }
 
     setFormData((prev) => ({
@@ -91,7 +93,7 @@ const ProductForm: React.FC<Props> = ({
                 },
               },
             ],
-      inventory: foundItem?.inventory || [],
+      // inventory: foundItem?.inventory || [],
     }));
 
     selectRef.current.blur();
@@ -204,8 +206,8 @@ const ProductForm: React.FC<Props> = ({
 
     const { skus } = formData;
 
-    const _matchSPU = {
-      ...matchSPU,
+    const _matchProduct = {
+      ...matchProduct,
       skus,
     };
 
@@ -222,7 +224,7 @@ const ProductForm: React.FC<Props> = ({
       }
     );
 
-    const foundSPUData = spu.find((x) => x.name === formData.name);
+    const foundSPUData = products.find((x) => x.name === formData.name);
     debugger;
     // x.skus.some((m) =>
     //   formData?.skus?.some((j) => j.attribute.size === m.attribute.size)
@@ -238,14 +240,14 @@ const ProductForm: React.FC<Props> = ({
       // }
     }
     // debugger;
-    // if (!matchSPU && modalType === "create") {
+    // if (!matchProduct && modalType === "create") {
     if (modalType === "create") {
       // const results = await createSpu(formData);
 
-      // _matchSPU = results[0].document;
+      // _matchProduct = results[0].document;
 
       const createForm = {
-        ...matchSPU,
+        ...matchProduct,
         ...formData,
         // inventories,
         images: imagesCreations,
@@ -257,16 +259,16 @@ const ProductForm: React.FC<Props> = ({
 
     if (modalType === "update") {
       await updateProduct(
-        _matchSPU._id,
+        _matchProduct._id,
         {
           ...formData,
           images: imagesCreations,
         },
         record
       );
-      // const skus = await updateSkus(_matchSPU._id, formData, record);
-      // // await updateInventory(_matchSPU._id, skus);
-      // await updateSpu(_matchSPU._id, {
+      // const skus = await updateSkus(_matchProduct._id, formData, record);
+      // // await updateInventory(_matchProduct._id, skus);
+      // await updateSpu(_matchProduct._id, {
       //   ...formData,
       //   images: imagesCreations,
       // });
@@ -298,34 +300,20 @@ const ProductForm: React.FC<Props> = ({
       ],
     });
     setImageUrls([]);
-    setMatchSPU(null!);
+    setMatchProduct(null!);
   };
 
   const pasteBinder = (e) => {
-    debugger;
-    const file = e.clipboardData.files[0];
-    GoogleUploaderRef.current.uploadHandler([file]);
-    // e.clipboardData.files[0]
-
-    // const pasteHandler = (e: any) => {
-    //   const pastedText = e.clipboardData.getData("text");
-    //   const pastedTextArray = pastedText.split("\n");
-    //   const filteredTextArray = pastedTextArray.filter(
-    //     (x) => x !== "" && x !== " "
-    //   );
-    //   const filteredText = filteredTextArray.join("\n");
-    //   const filteredTextArray2 = filteredText.split("\n");
-    //   const filteredText2 = filteredTextArray2.join("\n");
-    //   setEmbeddingPrompt(filteredText2);
-    // };
-
-    // window.addEventListener("paste", pasteHandler);
+    // debugger;
+    // const file = e.clipboardData.files[0];
+    // GoogleUploaderRef.current.uploadHandler([file]);
   };
 
   useEffect(() => {
     clearForm();
     if (record && open && modalType === "update") {
       setFormData({
+        _id: record._id,
         name: record.name,
         category: record.category,
         brand: record.brand,
@@ -333,16 +321,16 @@ const ProductForm: React.FC<Props> = ({
         skus: record.skus,
       });
       defaultNameInit([record.name]);
-      setMatchSPU(record);
+      setMatchProduct(record);
     }
   }, [open, record, modalType]);
 
-  console.log(datasource, "datasource!!!");
+  console.log(products, "spu!!!");
+
   return (
     <form
       className="flex flex-col"
       onSubmit={formSubitHandler}
-      onKeyUp={pasteBinder}
       onPaste={pasteBinder}
     >
       <GoogleUploader ref={GoogleUploaderRef} />
@@ -382,56 +370,51 @@ const ProductForm: React.FC<Props> = ({
             </Select.Option>
           ))}
         </Select>
-
-        {/* <input
-          type="brand"
-          name="brand"
-          id="brand"
-          className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-          placeholder=" "
-          value={formData.brand?._id}
-          onChange={inputChangeHandler}
-        /> */}
       </div>
-      {/* <SanityUploader /> */}
+
       <div className="relative z-0 w-full mb-3 mt-8 group flex flex-col">
         <label
           htmlFor="name"
           className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
         >
-          产品名称
+          SPU 名称
         </label>
         <Select
           mode="tags"
           size="small"
           maxTagCount={1}
-          placeholder="Please select a spu name"
+          placeholder="请选择 spu 名称"
           onChange={(event, dd) => {
-            // if (modalType === "create") {
-            //   defaultNameInit(event);
-            //   return;
-            // }
-            // globalSkus.map((item) => item.)
-            // debugger;
-            // spu.find((item) => item.name === event[0]);
-            setFormData({
-              ...formData,
-              name: event[0],
-            });
+            const foundSPU = products.find((s) => s._id === event[0]);
 
-            // return {
-            //   ...formData,
-            //   name: event,
-            // };
             selectRef.current.blur();
+
+            if (!foundSPU && event.length === 0) {
+              setFormData({
+                ...formData,
+                // name: event[0],
+                _id: undefined,
+                name: "",
+              });
+              return;
+            }
+
+            const d = {
+              ...formData,
+
+              name: foundSPU ? foundSPU.name : event[0],
+            } as any;
+
+            // setCurrentSpus((prev) => [...prev, d!]);
+            setFormData(d);
           }}
           className="w-full mt-2"
           choiceTransitionName="name"
           ref={selectRef}
           value={formData._id as any}
         >
-          {spu.map((item: IProduct, index: number) => (
-            <Select.Option key={index} value={item.name}>
+          {products.map((item: IProduct, index: number) => (
+            <Select.Option key={index} value={item._id}>
               {item.name}
             </Select.Option>
           ))}
