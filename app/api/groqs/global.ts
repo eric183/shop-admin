@@ -8,7 +8,9 @@ const globalQuery = groq`*[_type == "user"]{
   "brands": *[_type == "brand"]{ 
     _id,
     name,
-    logo
+    logo,
+    brandOrders,
+    "spus": *[_type == "spu" &&  references(^._id)]{ _id, name },
   },
   "inventories": *[_type == "inventory"]{
     _id,
@@ -18,6 +20,27 @@ const globalQuery = groq`*[_type == "user"]{
     skus
   },
 }[0]`;
+
+export const orderBrandsWithDateRange = groq`*[_type == 'brandOrder' && _createdAt >= $from && _createdAt < $to] {
+  _id,
+  _createdAt,
+  _updatedAt,
+  userOrders,
+  brand->{
+    _id,
+    name, 
+    logo,
+    "spus": *[_type == "spu" &&  references(^._id)]{ _id, name },
+  },
+}`;
+// export const orderWithBrandsQuery = groq`*[_type == "brandOrder" && brand._ref == $brandId && _createdAt >= $dateRange.from && _createdAt < $dateRange.to]{
+export const orderWithBrandsQuery = groq`*[_type == "brandOrder" && _id== $orderId]{
+  _id,
+  userOrders[]-> {
+    _id,
+    _ref,
+  }
+}`;
 // "orderItems": orderItems[]-> {..., "sku": sku->, "spu": sku->spu},
 // "account": account-> {..., "avatar": avatar.asset->url},
 // "finalPayment": sum(orderItems[]->sku->price),

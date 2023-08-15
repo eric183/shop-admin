@@ -1,3 +1,5 @@
+"use client";
+
 import {
   PlusCircleIcon,
   MinusCircleIcon,
@@ -7,7 +9,7 @@ import {
 import { Pagination, Select, Switch } from "antd";
 import clsx from "clsx";
 
-import React, { useState, useRef, useEffect, ElementRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { IProduct, Sku } from "~types/product";
 import { IOrder, IOrderCreateSource, OrderStatus } from "~types/order";
 import {
@@ -19,16 +21,30 @@ import { createAccount } from "~app/api/sanityRest/account";
 import { useUploadingStore } from "~components/CherryUI/GoogleUploader";
 import { modalStore } from "~components/CherryUI/Modal";
 import { motion } from "framer-motion";
-import { Tube } from "@react-three/drei";
 import ReactDOM from "react-dom";
-import { ToastContainer, toast } from "react-toastify";
-import brand from "~base/sanity/schemas/brand";
+import { toast } from "react-toastify";
+import { DateRangePicker } from "./Picker";
+import { sanityClient } from "~base/sanity/client";
+import { orderBrandsWithDateRange } from "~app/api/groqs/global";
+import { toYMD } from "~base/Timeformat";
+import { useQuery } from "@tanstack/react-query";
+import { fetchGlobal } from "~app/api/sanityRest/global";
+import { IBrandOrder } from "~types/brandOrder";
 
 interface Props {
-  datasource: IOrder[];
-  createSource: IOrderCreateSource;
+  datasource: IBrandOrder[];
+  // createSource: IOrderCreateSource;
 }
 
+export interface Brand {
+  _id: string;
+  name: string;
+  spus?: {
+    _id?: string;
+    name?: string;
+    skus?: Sku[];
+  }[];
+}
 export interface IOrderFormDto {
   _id?: string;
   account: any;
@@ -52,55 +68,82 @@ export interface IOrderFormDto {
   orderStatus: OrderStatus;
 }
 
-const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
-  const defaultOrder = {
+const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
+  const reponseGlobal = useQuery({
+    queryKey: ["global"],
+    queryFn: async () => await fetchGlobal(),
+  });
+
+  const { accounts, brands, skus } = reponseGlobal.data as IOrderCreateSource;
+
+  const defaultUserOrder = {
     account: {},
-    // discount: 0,
-    finalPayment: 0,
-    orderStatus: "UNPAID",
-    shipments: [],
-    sortNumber: 0,
-    deposit: 0,
-    discount: 0,
     orderItems: [
       {
-        sku: {},
         quantity: 1,
         preOrderPrice: 0,
-        isProductionPurchased: false,
+        sku: [
+          {
+            color: "",
+            size: "",
+            spuColorSize: "",
+          },
+        ],
       },
     ],
-  } as IOrderFormDto;
-  const { accounts, skus, brands } = createSource;
+    discount: 0,
+    finalPayment: 0,
+    deposit: 0,
+    orderStatus: "UNPAID",
+  } as unknown as IBrandOrder["userOrders"][0];
 
+  const [brandsWithOrders, setBrandsWithOrders] =
+    useState<IBrandOrder[]>(datasource);
+  const [selectedBrand, setSelectedBrand] = useState<{
+    name: string;
+    _id?: string;
+    logo?: string;
+    spus?: IBrandOrder["brand"]["spus"];
+  }>(null!);
+  const [selectedBrandOrder, setSelectedBrandOrder] = useState<IBrandOrder>({
+    _id: "",
+    brand: {
+      _id: "",
+      name: "",
+    },
+    userOrders: [defaultUserOrder],
+    createdAt: "",
+    updatedAt: "",
+  });
+
+  const formRef = useRef<any>();
   const selectRef = useRef<any>();
   const brandSelectRef = useRef<any>();
   const paginationRef = useRef<any>(null!);
   const { setModalType, modalType } = modalStore();
   const [matchSPU, setMatchSPU] = useState<IProduct>(null!);
-  const [selectedBrand, setSelectedBrand] = useState<{
-    name: string;
-    _id: string;
-    logo?: string;
-  }>(null!);
+  const [fromTo, setFromTo] = useState<[Date, Date]>(null!);
+
   const { clearImageUrls, imageUrls, setImageUrls } = useUploadingStore();
 
   // const [order, setOrder] = useState<IOrderFormDto>(defaultOrder);
 
-  const [brandOrders, setBrandOrders] = useState<IOrderFormDto[]>([
-    defaultOrder,
-  ]);
+  // const [brandOrders, setBrandOrders] = useState<IOrderFormDto[]>([
+  //   defaultOrder,
+  // ]);
+  // brandsWithOrder.find((x) => x._id === foundBrandOrder?._id)
 
   const [orderIndex, setOrderIndex] = useState<number>(0);
   const [domReady, setDomReady] = React.useState(false);
+
   const [dynamicAccounts, setDynamicAccounts] =
     useState<IOrderCreateSource["accounts"]>(accounts);
 
   const {
-    open,
+    orderOpen,
     setConfirmLoading,
     confirmLoading,
-    setOpen,
+    setOrderOpen,
     record,
     setRecord,
   } = modalStore();
@@ -139,18 +182,23 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
     //   : order.account;
 
     if (modalType === "create") {
-      const orderItemsRs = await createOrderItem(brandOrders);
+      const orderItemsRs = await createOrderItem({
+        ...selectedBrandOrder,
+        brand: selectedBrand as IBrandOrder["brand"],
+      });
+      const _userOrders = orderItemsRs.results
+        .filter(
+          (x: { document: { _type: "userOrder" | "orderItems" } }) =>
+            x.document._type === "userOrder"
+        )
+        .map((x: { document: [x: string] }) => x.document);
 
       const orderRs = await createOrder(
-        selectedBrand,
-        orderItemsRs.results
-          .filter(
-            (x: { document: { _type: "userOrder" | "orderItems" } }) =>
-              x.document._type === "userOrder"
-          )
-          .map((x: { document: [x: string] }) => x.document)
-
-        // orderItemsRs.results.map((result: any) => result.document)
+        {
+          ...selectedBrandOrder,
+          brand: selectedBrand as IBrandOrder["brand"],
+        },
+        _userOrders
       );
     }
 
@@ -170,7 +218,7 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
     }
 
     setConfirmLoading(false);
-    setOpen(false);
+    setOrderOpen(false);
     clearForm();
     // await formPost(skuCreations, spuCreations, imagesCreations);
 
@@ -178,7 +226,17 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
   };
 
   const clearForm = async () => {
-    setBrandOrders([defaultOrder]);
+    setSelectedBrandOrder({
+      _id: "",
+      brand: {
+        _id: "",
+        name: "",
+      },
+      userOrders: [defaultUserOrder],
+      createdAt: "",
+      updatedAt: "",
+    });
+    // setBrandOrders([defaultOrder]);
     // setOrder({
     //   account: {},
     //   discount: 0,
@@ -199,20 +257,37 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
     // });
   };
 
+  const skuFilter = (skus: Sku[]) => {
+    if (!selectedBrand) {
+      return skus;
+    }
+
+    const _skus = skus.filter((_s) =>
+      selectedBrand.spus?.some((_spu) => _spu._id === _s?.spu?.spuId)
+    );
+
+    return _skus;
+  };
+
   useEffect(() => {
-    if (!open) return;
+    if (!orderOpen) return;
     if (modalType === "update") {
+      setSelectedBrandOrder(record);
+      // debugger;
+
       // setOrder(record);
     }
-  }, [open, record]);
+  }, [orderOpen, record]);
 
   useEffect(() => {
     setDomReady(true);
   }, []);
 
-  // console.log(brands, "brands");
-  // console.log(orderIndex, brandOrders, "brandOrders...");
+  if (reponseGlobal.status !== "success") return null;
 
+  console.log(brandsWithOrders, "brandsWithOrders");
+
+  console.log(`selectedBrandOrder`, selectedBrandOrder);
   return (
     <article className="flex flex-row">
       <ArrowLeftCircleIcon
@@ -228,45 +303,159 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
         }}
       />
 
-      {domReady &&
+      {domReady ? (
         ReactDOM.createPortal(
           <div className="relative z-0 w-60 group group-one">
+            <DateRangePicker
+              className="mt-2"
+              onChange={async (d) => {
+                if (d === null) {
+                  setBrandsWithOrders([]);
+                  setSelectedBrand({ name: "", _id: undefined });
+
+                  clearForm();
+
+                  return;
+                }
+
+                const dateRangeOrders = await sanityClient.fetch<IBrandOrder[]>(
+                  orderBrandsWithDateRange,
+                  {
+                    from: d[0],
+                    to: d[1],
+                  }
+                );
+
+                const _brandsWithOrders = dateRangeOrders.map((order) => ({
+                  ...order,
+                  userOrders: [defaultUserOrder],
+                }));
+
+                setBrandsWithOrders(
+                  _brandsWithOrders.length > 0 ? _brandsWithOrders : undefined!
+                );
+
+                setSelectedBrand({
+                  name: "",
+                  _id: undefined,
+                });
+              }}
+            />
+          </div>,
+          document.querySelector(".ant-modal-header")!
+        )
+      ) : (
+        <></>
+      )}
+
+      {domReady ? (
+        ReactDOM.createPortal(
+          <div className="relative z-0 w-96 group group-one">
             {/* <label
                     htmlFor="name"
                     className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
                   >
                     品牌
                   </label> */}
-            <Select
-              mode="tags"
-              size="small"
-              maxTagCount={1}
-              placeholder="请选择品牌"
-              onChange={(detail, de) => {
-                const foundBrand = brands.find(
-                  (item) => item._id === detail[0]
-                );
+            {brandsWithOrders && brandsWithOrders.length === 0 ? (
+              <Select
+                mode="tags"
+                size="small"
+                maxTagCount={1}
+                placeholder="请选择品牌"
+                onChange={(detail, de) => {
+                  const foundBrand = brands
+                    // .map((x) => x._id)
+                    .find((item) =>
+                      detail.length >= 2
+                        ? item._id === detail[1]
+                        : item._id === detail[0]
+                    );
 
-                setSelectedBrand(foundBrand!);
+                  setSelectedBrand(foundBrand!);
+                  // setSelectedBrandOrder([defaultOrder]);
+                  // setBrandOrders([defaultOrder]);
+                  brandSelectRef.current.blur();
+                }}
+                className="w-full mt-2"
+                choiceTransitionName="name"
+                ref={brandSelectRef}
+                value={selectedBrand?._id}
+              >
+                {brands.map((item, index: number) => (
+                  <Select.Option key={index} value={item._id}>
+                    {item.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            ) : (
+              <Select
+                mode="tags"
+                size="small"
+                maxTagCount={1}
+                placeholder="请选择品牌"
+                onChange={(detail, de) => {
+                  const foundBrandOrder = brandsWithOrders
+                    // .map((x) => x.brand)
+                    .find((item) =>
+                      detail.length >= 2
+                        ? item.brand._id === detail[1]
+                        : item.brand._id === detail[0]
+                    );
 
-                brandSelectRef.current.blur();
-              }}
-              className="w-full mt-2"
-              choiceTransitionName="name"
-              ref={brandSelectRef}
-              value={selectedBrand?._id}
-            >
-              {brands.map((item, index: number) => (
-                <Select.Option key={index} value={item._id}>
-                  {item.name}
-                </Select.Option>
-              ))}
-            </Select>
+                  if (foundBrandOrder) {
+                    const fountBrandWithOrder = brandsWithOrders.find(
+                      (x) => x._id === foundBrandOrder._id
+                    )!;
+
+                    setSelectedBrandOrder(
+                      fountBrandWithOrder as unknown as IBrandOrder
+                    );
+                  }
+
+                  setSelectedBrand(
+                    foundBrandOrder
+                      ? foundBrandOrder.brand
+                      : { name: "", _id: undefined }!
+                  );
+
+                  brandSelectRef.current.blur();
+                }}
+                className="w-full mt-2"
+                choiceTransitionName="name"
+                ref={brandSelectRef}
+                value={selectedBrand?._id}
+              >
+                {brandsWithOrders && brandsWithOrders.length >= 0
+                  ? brandsWithOrders
+                      .map((x) => ({ ...x }))
+                      .map((item, index: number) => (
+                        <Select.Option key={index} value={item.brand._id}>
+                          {item.brand.name + " " + toYMD(item?.createdAt)}
+                        </Select.Option>
+                      ))
+                  : brandsWithOrders
+                  ? brands.map((item, index: number) => (
+                      <Select.Option key={index} value={item._id}>
+                        {item.name}
+                      </Select.Option>
+                    ))
+                  : ([] as any[]).map((item, index: number) => (
+                      <Select.Option key={index} value={item._id}>
+                        {item.name}
+                      </Select.Option>
+                    ))}
+              </Select>
+            )}
           </div>,
           document.querySelector(".ant-modal-header")!
-        )}
+        )
+      ) : (
+        <></>
+      )}
 
       <motion.form
+        ref={formRef}
         className="flex flex-row mx-2 w-full overflow-hidden pb-10"
         onSubmit={formSubitHandler}
         initial={"hidden"}
@@ -288,7 +477,7 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
             );
           })} */}
 
-        {brandOrders.map((order, index) => (
+        {selectedBrandOrder.userOrders.map((order, index) => (
           <motion.div
             key={index}
             className="w-full h-full flex flex-col shrink-0"
@@ -318,24 +507,32 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                 maxTagCount={1}
                 placeholder="Please select a person"
                 onChange={async (detail, de) => {
-                  const foundAccount = accounts.find(
-                    (item) => item._id === detail[0]
+                  const foundAccount = dynamicAccounts.find((item) =>
+                    detail.length >= 2
+                      ? item._id === detail[1]
+                      : item._id === detail[0]
                   );
+
                   const _account = foundAccount
                     ? foundAccount
-                    : (
+                    : detail.length > 0
+                    ? (
                         await createAccount({
                           username: detail[0],
                         })
-                      )[0].document;
+                      )[0].document
+                    : { username: "", _id: undefined };
 
-                  setBrandOrders((prev) => {
-                    const newOrders = [...prev];
-                    newOrders[index].account = _account;
-                    return newOrders;
+                  setSelectedBrandOrder((prev) => {
+                    const newOrder = { ...prev };
+                    newOrder.userOrders[index].account = _account;
+                    return newOrder;
                   });
 
-                  setDynamicAccounts((prev) => [...prev, _account]);
+                  if (!foundAccount && detail.length > 0) {
+                    setDynamicAccounts((prev) => [...prev, _account]);
+                  }
+
                   selectRef.current.blur();
                 }}
                 className="w-full mt-2"
@@ -363,23 +560,31 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                       ? order.orderItems
                       : [];
                     // const currentOrders = ];
+
+                    // currentOrderItems.push({
+                    //   skus: [
+                    //     {
+                    //       _id: undefined,
+                    //     },
+                    //   ],
+                    //   quantity: 1,
+                    //   preOrderPrice: 0,
+                    //   isProductionPurchased: false,
+                    // });
                     currentOrderItems.push({
-                      sku: {},
+                      sku: {
+                        _id: undefined,
+                      },
                       quantity: 1,
                       preOrderPrice: 0,
                       isProductionPurchased: false,
                     });
 
-                    setBrandOrders((prev) => {
-                      const newOrders = [...prev];
-                      newOrders[index].orderItems = currentOrderItems;
-                      return newOrders;
+                    setSelectedBrandOrder((prev) => {
+                      const newOrder = { ...prev };
+                      newOrder.userOrders[index].orderItems = currentOrderItems;
+                      return newOrder;
                     });
-
-                    // setOrder({
-                    //   ...order,
-                    //   orderItems: currentOrderItems,
-                    // });
                   }}
                 />
               </label>
@@ -397,15 +602,12 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                       onClick={() => {
                         const currentOrderItems = [...order.orderItems];
                         currentOrderItems.splice(orderItemIndex, 1);
-                        setBrandOrders((prev) => {
-                          const newOrders = [...prev];
-                          newOrders[index].orderItems = currentOrderItems;
-                          return newOrders;
+                        setSelectedBrandOrder((prev) => {
+                          const newOrder = { ...prev };
+                          newOrder.userOrders[index].orderItems =
+                            currentOrderItems;
+                          return newOrder;
                         });
-                        // setOrder({
-                        //   ...order,
-                        //   orderItems: currentOrderItems,
-                        // });
                       }}
                     />
 
@@ -422,16 +624,23 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                           placeholder="Please select"
                           onChange={(detail, de) => {
                             const currentOrderItems = [...order.orderItems];
-
+                            debugger;
                             currentOrderItems[orderItemIndex].sku = skus.find(
                               (sku) => sku._id === detail
                             )!;
 
-                            setBrandOrders((prev) => {
-                              const newOrders = [...prev];
-                              newOrders[index].orderItems = currentOrderItems;
-                              return newOrders;
+                            setSelectedBrandOrder((prev) => {
+                              const newOrder = { ...prev };
+                              newOrder.userOrders[index].orderItems =
+                                currentOrderItems;
+                              return newOrder;
                             });
+
+                            // setBrandOrders((prev) => {
+                            //   const newOrders = [...prev];
+                            //   newOrders[index].orderItems = currentOrderItems;
+                            //   return newOrders;
+                            // });
                             // setOrder({
                             //   ...order,
                             //   orderItems: currentOrderItems,
@@ -443,9 +652,9 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                           ref={selectRef}
                           value={orderItem.sku._id}
                         >
-                          {skus.map((item, index: number) => (
+                          {skuFilter(skus)!.map((item, index: number) => (
                             <Select.Option key={index} value={item._id}>
-                              {item.spu.name +
+                              {item?.spu?.name +
                                 " " +
                                 item.attribute.color +
                                 " " +
@@ -463,11 +672,18 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                             currentOrderItems[
                               orderItemIndex
                             ].isProductionPurchased = detail;
-                            setBrandOrders((prev) => {
-                              const newOrders = [...prev];
-                              newOrders[index].orderItems = currentOrderItems;
-                              return newOrders;
+                            setSelectedBrandOrder((prev) => {
+                              const newOrder = { ...prev };
+                              newOrder.userOrders[index].orderItems =
+                                currentOrderItems;
+                              return newOrder;
                             });
+
+                            // setBrandOrders((prev) => {
+                            //   const newOrders = [...prev];
+                            //   newOrders[index].orderItems = currentOrderItems;
+                            //   return newOrders;
+                            // });
                           }}
                         />
                         <label
@@ -490,11 +706,17 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                             currentOrderItems[orderItemIndex].quantity =
                               parseFloat(event.target.value);
 
-                            setBrandOrders((prev) => {
-                              const newOrders = [...prev];
-                              newOrders[index].orderItems = currentOrderItems;
-                              return newOrders;
+                            setSelectedBrandOrder((prev) => {
+                              const newOrder = { ...prev };
+                              newOrder.userOrders[index].orderItems =
+                                currentOrderItems;
+                              return newOrder;
                             });
+                            // setBrandOrders((prev) => {
+                            //   const newOrders = [...prev];
+                            //   newOrders[index].orderItems = currentOrderItems;
+                            //   return newOrders;
+                            // });
                           }}
                           name={`quantity_${orderItemIndex}`}
                           id="attribute_color"
@@ -519,11 +741,18 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                             const currentOrderItems = [...order.orderItems];
                             currentOrderItems[orderItemIndex].preOrderPrice =
                               parseFloat(event.target.value);
-                            setBrandOrders((prev) => {
-                              const newOrders = [...prev];
-                              newOrders[index].orderItems = currentOrderItems;
-                              return newOrders;
+
+                            setSelectedBrandOrder((prev) => {
+                              const newOrder = { ...prev };
+                              newOrder.userOrders[index].orderItems =
+                                currentOrderItems;
+                              return newOrder;
                             });
+                            // setBrandOrders((prev) => {
+                            //   const newOrders = [...prev];
+                            //   newOrders[index].orderItems = currentOrderItems;
+                            //   return newOrders;
+                            // });
                           }}
                           name={`preOrderPrice_${orderItemIndex}`}
                           id="preOrderPrice"
@@ -554,15 +783,25 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                   placeholder=" "
                   value={order.deposit}
                   onChange={(event) => {
+                    setSelectedBrandOrder((prev) => {
+                      const newOrder = { ...prev };
+                      newOrder.userOrders[index].deposit = parseFloat(
+                        event.target.value
+                      );
+                      return newOrder;
+                    });
+
                     // setOrder({
                     //   ...order,
                     //   deposit: parseFloat(event.target.value),
                     // });
-                    setBrandOrders((prev) => {
-                      const newOrders = [...prev];
-                      newOrders[index].deposit = parseFloat(event.target.value);
-                      return newOrders;
-                    });
+                    // setBrandOrders((prev) => {
+                    //   const newOrders = [...prev];
+                    //   newOrders[index].deposit = parseFloat(
+                    //     event.target.value
+                    //   );
+                    //   return newOrders;
+                    // });
                   }}
                 />
                 <label
@@ -581,17 +820,24 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                   placeholder=" "
                   value={order.discount}
                   onChange={(event) => {
+                    setSelectedBrandOrder((prev) => {
+                      const newOrder = { ...prev };
+                      newOrder.userOrders[index].discount = parseFloat(
+                        event.target.value
+                      );
+                      return newOrder;
+                    });
                     // setOrder({
                     //   ...order,
                     //   discount: parseFloat(event.target.value),
                     // });
-                    setBrandOrders((prev) => {
-                      const newOrders = [...prev];
-                      newOrders[index].discount = parseFloat(
-                        event.target.value
-                      );
-                      return newOrders;
-                    });
+                    // setBrandOrders((prev) => {
+                    //   const newOrders = [...prev];
+                    //   newOrders[index].discount = parseFloat(
+                    //     event.target.value
+                    //   );
+                    //   return newOrders;
+                    // });
                   }}
                 />
                 <label
@@ -615,12 +861,20 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                     //   finalPayment: parseFloat(event.target.value),
                     // });
 
-                    setBrandOrders((prev) => {
-                      const newOrders = [...prev];
-                      newOrders[index].finalPayment = parseFloat(
+                    // setBrandOrders((prev) => {
+                    //   const newOrders = [...prev];
+                    //   newOrders[index].finalPayment = parseFloat(
+                    //     event.target.value
+                    //   );
+                    //   return newOrders;
+                    // });
+
+                    setSelectedBrandOrder((prev) => {
+                      const newOrder = { ...prev };
+                      newOrder.userOrders[index].finalPayment = parseFloat(
                         event.target.value
                       );
-                      return newOrders;
+                      return newOrder;
                     });
                   }}
                 />
@@ -647,11 +901,16 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
                   //   ...order,
                   //   orderStatus: detail,
                   // });
+                  // setBrandOrders((prev) => {
+                  //   const newOrders = [...prev];
+                  //   newOrders[index].orderStatus = detail;
+                  //   return newOrders;
+                  // });
 
-                  setBrandOrders((prev) => {
-                    const newOrders = [...prev];
-                    newOrders[index].orderStatus = detail;
-                    return newOrders;
+                  setSelectedBrandOrder((prev) => {
+                    const newOrder = { ...prev };
+                    newOrder.userOrders[index].orderStatus = detail;
+                    return newOrder;
                   });
                 }}
                 className="w-full mt-2"
@@ -679,13 +938,17 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
           // }
           const currentIndex = orderIndex + 1;
           setOrderIndex(currentIndex);
-          console.log(brandOrders.length);
-          if (currentIndex >= brandOrders.length) {
+          console.log(selectedBrandOrder.userOrders.length);
+          if (currentIndex >= selectedBrandOrder.userOrders.length) {
             // alert('已经是最后一条了')
             toast.info("新用户订单...", {
               autoClose: 1000,
             });
-            setBrandOrders((state) => [...state, defaultOrder]);
+            setSelectedBrandOrder((prev) => {
+              const newOrder = { ...prev };
+              newOrder.userOrders = [...newOrder.userOrders, defaultUserOrder];
+              return newOrder;
+            });
           }
         }}
       />
@@ -696,7 +959,7 @@ const BrandOrderForm: React.FC<Props> = ({ datasource, createSource }) => {
           defaultCurrent={1}
           defaultPageSize={1}
           current={orderIndex + 1}
-          total={brandOrders.length}
+          total={selectedBrandOrder.userOrders.length}
           onChange={(page) => {
             setOrderIndex(page - 1);
           }}
@@ -770,5 +1033,13 @@ const Pager = ({ current, total }) => {
   );
   return Renders;
 };
+
+function useConditionalEffect(condition, effect) {
+  useEffect(() => {
+    if (condition) {
+      effect();
+    }
+  }, [condition, effect]);
+}
 
 export default BrandOrderForm;

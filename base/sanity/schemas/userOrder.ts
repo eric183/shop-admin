@@ -52,6 +52,36 @@ export default defineType({
       title: "Deposit",
       description: "定金",
     },
+    {
+      type: "string",
+      name: "orderStatus",
+      title: "Order Status",
+      initialValue: "UNPAID",
+      validation: (Rule) => Rule.required(),
+      options: {
+        list: [
+          // 未支付
+          {
+            title: "Unpaid",
+            value: "UNPAID",
+          },
+          // 定金
+          {
+            title: "HalfPaid",
+            value: "HALFPAID",
+          },
+          // 尾款
+          {
+            title: "Paid",
+            value: "PAID",
+          },
+          {
+            title: "Cancelled",
+            value: "CANCELLED",
+          },
+        ],
+      },
+    },
   ],
   preview: {
     select: {

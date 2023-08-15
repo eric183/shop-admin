@@ -27,6 +27,13 @@ const RoutePaths: RoutePathesType[] = [
     children: [],
     sort: 2,
   },
+  {
+    path: "address",
+    linkLabel: "地址管理",
+    parent: null,
+    children: [],
+    sort: 2,
+  },
 
   // {
   //   path: "GPT",

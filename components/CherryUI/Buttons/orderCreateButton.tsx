@@ -21,12 +21,10 @@ const OrderCreateButton: FC<Props> = ({ datasource, className }) => {
     queryFn: async () => await fetchGlobal(),
   });
 
-  const [open, setOpen] = useState<boolean>(false);
-  const { setModalType } = modalStore();
+  const { setModalType, setOrderOpen } = modalStore();
 
-  console.log(reponseGlobal.data, "....");
+  // console.log(reponseGlobal.data, "....");
   if (reponseGlobal.status !== "success") return null;
-
   return (
     <section
       className={clsx({
@@ -39,14 +37,14 @@ const OrderCreateButton: FC<Props> = ({ datasource, className }) => {
       </GradientButton> */}
       <GradientButton
         onClick={() => {
-          setOpen(true);
+          setOrderOpen(true);
           setModalType("create");
         }}
       >
         新建订单
       </GradientButton>
 
-      <CherryVisionModal setOpen={setOpen} open={open}>
+      <CherryVisionModal>
         <BrandOrderForm
           createSource={
             {
@@ -63,15 +61,15 @@ const OrderCreateButton: FC<Props> = ({ datasource, className }) => {
 };
 
 const CherryVisionModal = ({ children, open, setOpen }: any) => {
-  const { confirmLoading } = modalStore();
+  const { confirmLoading, setOrderOpen, orderOpen } = modalStore();
   const handleCancel = () => {
-    setOpen(false);
+    setOrderOpen(false);
   };
   return (
     <Modal
       title={"新建订单"}
       width={800}
-      open={open}
+      open={orderOpen}
       confirmLoading={confirmLoading}
       onCancel={handleCancel}
       footer={null}

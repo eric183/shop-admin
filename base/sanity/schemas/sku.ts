@@ -21,7 +21,7 @@ export default defineType({
       type: "number",
       name: "price",
       title: "Price",
-      validation: (Rule) => Rule.required(),
+      // validation: (Rule) => Rule.required(),
     }),
 
     defineField({

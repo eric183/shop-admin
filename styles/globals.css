@@ -115,3 +115,7 @@ span.ant-switch-inner {
 .Toastify__toast-body {
   @apply text-sm;
 }
+
+:where(.css-dev-only-do-not-override-txh9fw).ant-btn-primary {
+  @apply text-white bg-blue-500 hover:bg-blue-600;
+}

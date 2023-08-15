@@ -2,7 +2,7 @@
 
 import useColumns from "./columns";
 import { useQuery } from "@tanstack/react-query";
-import { IOrder, IOrderCreateSource } from "~types/order";
+import { IOrder } from "~types/order";
 import OrderForm from "./form";
 import { fetchGlobal } from "~app/api/sanityRest/global";
 import OrderProductionDrawer from "./drawer";
@@ -10,19 +10,24 @@ import { brandOrderQuery } from "~app/api/groqs/order";
 import { sanityClient } from "~base/sanity/client";
 import CherryVisionModal from "~components/CherryUI/Modal";
 import CherryTable from "~components/CherryUI/Table";
+import useBrandColumns from "./brandColumn";
 import { IBrandOrder } from "~types/brandOrder";
+import { omit } from "lodash";
+import { Select } from "antd";
+import { useState } from "react";
 
-const Root = ({
+const BrandRoot = ({
   year,
   month,
   brandId,
-  userOrderId,
+  brandOrderId,
 }: {
   year: string;
   month: string;
   brandId?: string;
-  userOrderId?: string;
+  brandOrderId?: string;
 }) => {
+  const [filterValue, setFilterValue] = useState("account");
   const reponseGlobal = useQuery({
     queryKey: ["global"],
     queryFn: async () => await fetchGlobal(),
@@ -31,12 +36,12 @@ const Root = ({
   const { data, status } = useQuery({
     queryKey: ["brandOrder"],
     queryFn: async () =>
-      await sanityClient.fetch<IBrandOrder[]>(brandOrderQuery, {
+      await sanityClient.fetch<any>(brandOrderQuery, {
         dateRange: {
           gte: new Date(`${year}-${month}-01`),
           lt: new Date(`${year}-${Number(month) + 1}-01`),
         },
-
+        // brandId,
         // date: `${year}-${month}`,
         // year: year,
         // month: month,
@@ -46,32 +51,41 @@ const Root = ({
       }),
   });
 
-  const [column] = useColumns(reponseGlobal.refetch);
+  const [column] = useBrandColumns(
+    reponseGlobal.refetch,
+    brandOrderId as string,
+    data?.find((b: any) => b?._id === brandId)
+  );
+
   if (status !== "success" || reponseGlobal.status !== "success") return null;
+
+  const brandOrderInfo = data.find((b: any) => b?._id === brandId);
+
+  const brandOrders = brandOrderInfo.brandOrders.map((b) => ({
+    ...b,
+    name: brandOrderInfo.name,
+    _id: b._id,
+  }));
+
+  const datasource = brandOrderId
+    ? brandOrders.find((x) => x._id === brandOrderId).userOrders
+    : brandOrders;
 
   return (
     <>
       {/* <MonthPicker month={month} /> */}
       {/* <CreateButton datasource={data} /> */}
-      {!brandId && (
+      {/* <div className="w-full flex mb-5 justify-end"></div> */}
+      {brandId && (
         <>
-          <CherryVisionModal>
-            <OrderForm
-              datasource={data}
-              // createSource={
-              //   {
-              //     accounts: reponseGlobal.data.accounts,
-              //     skus: reponseGlobal.data.skus,
-              //     brands: reponseGlobal.data.brands,
-              //   } as const as IOrderCreateSource
-              // }
-            />
-          </CherryVisionModal>
+          {/* <CherryVisionModal>
+            <OrderForm datasource={data} />
+          </CherryVisionModal> */}
+          {/* <OrderProductionDrawer /> */}
 
-          <OrderProductionDrawer />
           <section>
-            <CherryTable<IBrandOrder>
-              datasource={data}
+            <CherryTable<IBrandOrder & IBrandOrder["userOrders"][0]>
+              datasource={datasource}
               columns={column}
               keyIndex={"_id"}
               status={status}
@@ -83,4 +97,4 @@ const Root = ({
   );
 };
 
-export default Root;
+export default BrandRoot;

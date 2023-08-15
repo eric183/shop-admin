@@ -13,7 +13,7 @@ import { modalStore } from "~components/CherryUI/Modal";
 const useColumns = (refetch: () => void) => {
   const queryClient = useQueryClient();
   // const [record, setEditRecord] = useState<IOrder | null>(null);
-  const { setOpen, setRecord, setModalType } = modalStore();
+  const { setOpen, setRecord, setModalType, setTitle } = modalStore();
   const { drawInfo, setDrawInfo, setDrawOpen } = drawStore();
   const onClose = () => {
     setDrawOpen(false);
@@ -124,8 +124,10 @@ const useColumns = (refetch: () => void) => {
             <Button
               type="link"
               onClick={() => {
+                setTitle("编辑订单");
                 setRecord(record);
                 setModalType("update");
+
                 setOpen(true);
               }}
             >

@@ -1,7 +1,9 @@
-import { sanityMutationClient } from "~base/sanity/client";
+import { sanityClient, sanityMutationClient } from "~base/sanity/client";
 import { IOrder, IOrderCreateSource } from "~types/order";
 import { v4 as uuidv4 } from "uuid";
 import { IOrderFormDto } from "~app/brandOrder/form";
+import { orderWithBrandsQuery } from "../groqs/global";
+import { IBrandOrder } from "~types/brandOrder";
 
 export const createOrderSampler = async (order: any) => {
   const { account, deposit, finalPayment, orderStatus, sortNumber } = order;
@@ -61,18 +63,15 @@ export const createOrderSampler = async (order: any) => {
   });
 };
 
-export const createOrderItem = async (brandOrders: IOrderFormDto[]) => {
-  const userOrders: any = [];
+export const createOrderItem = async (brandOrders: IBrandOrder) => {
+  const { userOrders } = brandOrders;
+  const createUserOrderQ: any = [];
 
-  const accountArray: any = [];
-  brandOrders.map(() => ({
-    create: {},
-  }));
-  brandOrders.forEach((order) => {
+  userOrders.forEach((order) => {
     order.orderItems.forEach((orderItem) => {
       orderItem._id = uuidv4();
       order.account._key = uuidv4();
-      userOrders.push({
+      createUserOrderQ.push({
         create: {
           _type: "orderItem",
           _id: orderItem._id,
@@ -91,7 +90,7 @@ export const createOrderItem = async (brandOrders: IOrderFormDto[]) => {
       });
     });
 
-    userOrders.push({
+    createUserOrderQ.push({
       create: {
         _type: "userOrder",
         _id: uuidv4(),
@@ -103,6 +102,7 @@ export const createOrderItem = async (brandOrders: IOrderFormDto[]) => {
         discount: order.discount,
         finalPayment: order.finalPayment,
         deposit: order.deposit,
+        orderStatus: order.orderStatus,
         // {
         //   type: "number",
         //   name: "discount",
@@ -137,7 +137,7 @@ export const createOrderItem = async (brandOrders: IOrderFormDto[]) => {
   });
 
   return await sanityMutationClient({
-    mutations: userOrders,
+    mutations: createUserOrderQ,
   });
 
   // mutations: order.orderItems.map((orderItem) => ({
@@ -162,28 +162,75 @@ export const createOrderItem = async (brandOrders: IOrderFormDto[]) => {
 };
 
 export const createOrder = async (
-  brand: Partial<IOrderCreateSource["brands"][0]>,
-  userOrders: IOrderFormDto["orderItems"]
+  brandOrder: IBrandOrder,
+  userOrders: IBrandOrder["userOrders"]
 ) => {
+  let _userOrders = userOrders;
   const formatOrder: any = [];
+  const brandOrderId = brandOrder._id ? brandOrder._id : uuidv4();
+  const _userOrdersResponse: IBrandOrder["userOrders"] = (
+    await sanityClient.fetch(orderWithBrandsQuery, {
+      orderId: brandOrder._id,
+      // dateRange: {
+      //   from: "2021-01-01",
+      //   to: "2021-12-31",
+      // },
+    })
+  ).map((x: any) => x.userOrders)[0];
+
+  _userOrders = _userOrdersResponse
+    ? [..._userOrders, ..._userOrdersResponse]
+    : _userOrders;
 
   formatOrder.push({
-    create: {
+    createOrReplace: {
       _type: "brandOrder",
-      _id: uuidv4(),
+      _id: brandOrderId,
       brand: {
         _type: "reference",
-        _ref: brand._id,
+        _ref: brandOrder.brand._id,
       },
-      userOrders: userOrders.map((userOrder) => ({
+      userOrders: _userOrders.map((_u) => ({
         _type: "reference",
-        _ref: userOrder._id,
+        _ref: _u._id,
         _key: uuidv4(),
       })),
     },
   });
 
-  debugger;
+  // formatOrder.push({
+  //   // createOrReplace: {
+  //   //   // id: brand._id,
+  //   //   ...brand,
+  //   //   brandOrders: [
+  //   //     ...preBrandOrders.map((_p: { _id: string }) => ({
+  //   //       _type: "reference",
+  //   //       _ref: _p._id,
+  //   //     })),
+  //   //     {
+  //   //       _type: "reference",
+  //   //       _ref: brandOrderId,
+  //   //     },
+  //   //   ],
+  //   // },
+  //   patch: {
+  //     id: brandOrderId,
+  //     set: {
+  //       userOrders: [
+  //         ..._userOrders.map((_p) => ({
+  //           _type: "reference",
+  //           _ref: brandOrderId,
+  //           _key: uuidv4(),
+  //         })),
+  //         // {
+  //         //   _type: "reference",
+  //         //   _ref: brandOrderId,
+  //         // },
+  //       ],
+  //     },
+  //   },
+  // });
+
   return await sanityMutationClient({
     mutations: formatOrder,
   });

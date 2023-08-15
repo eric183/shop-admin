@@ -71,7 +71,9 @@ export interface IOrderCreateSource {
     _id: string;
     name: string;
     logo: string;
+    spus: Spu[];
   }[];
+  skus: Skus[];
   username: null;
 }
 

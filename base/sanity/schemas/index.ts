@@ -8,6 +8,7 @@ import inventory from "./inventory";
 import orderItem from "./orderItem";
 import brand from "./brand";
 import brandOrder from "./brandOrder";
+import address from "./address";
 
 export const schemaTypes = [
   user,
@@ -20,4 +21,5 @@ export const schemaTypes = [
   sku,
   spu,
   brand,
+  address,
 ];

@@ -45,13 +45,12 @@ const GoogleUploader = forwardRef((props, ref) => {
   };
 
   const uploadHandler = async (fileList: RcFile[]) => {
-    
     setLoading(true);
-    
+
     if (!fileList || fileList.length === 0) return;
     // const documents = await upload(fileList);
     const documents = await SanityUploader(fileList);
-   setLoading(false);
+    setLoading(false);
     const docs = documents.map((document) => ({
       ...document,
       url: document.url,
@@ -85,13 +84,12 @@ const GoogleUploader = forwardRef((props, ref) => {
   };
 
   const onChange = ({ fileList }: any) => {
-    debugger;
     clearImageUrls();
     setImageUrls(fileList.filter((f: ISanityDocument) => f._id));
   };
 
   useEffect(() => {
-    if(uploadList.length > 0) {
+    if (uploadList.length > 0) {
       uploadHandler(uploadList);
     }
   }, [uploadList]);
@@ -137,5 +135,5 @@ const GoogleUploader = forwardRef((props, ref) => {
     </div>
   );
 });
-
+GoogleUploader.displayName = "GoogleUploader";
 export default GoogleUploader;

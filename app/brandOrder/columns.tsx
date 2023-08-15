@@ -11,6 +11,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { drawStore } from "./drawer";
 import dayjs from "dayjs";
 import { modalStore } from "~components/CherryUI/Modal";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { IBrandOrder } from "~types/brandOrder";
+// import { usePathname } from "next/navigation";
 const useColumns = (refetch: () => void) => {
   const queryClient = useQueryClient();
   // const [record, setEditRecord] = useState<IOrder | null>(null);
@@ -19,8 +22,9 @@ const useColumns = (refetch: () => void) => {
   const onClose = () => {
     setDrawOpen(false);
   };
-
-  const columns: ColumnsType<IOrder> = [
+  const pathname = usePathname();
+  const querySearch = useSearchParams();
+  const columns: ColumnsType<IBrandOrder> = [
     // {
     //   title: "订单号",
     //   dataIndex: "_id",
@@ -33,120 +37,185 @@ const useColumns = (refetch: () => void) => {
     //     );
     //   },
     // },
+
     {
-      title: "买家",
-      dataIndex: "account",
-      key: "account",
-      render: (account: IOrder["account"], record) => {
-        return <span className="font-bold">{account.username}</span>;
+      title: "品牌",
+      dataIndex: "name",
+      key: "name",
+      render: (name: string, record) => {
+        return (
+          <Link
+            href={
+              pathname + "?" + querySearch.toString() + "&brandId=" + record._id
+            }
+            className="font-bold"
+          >
+            {name}
+          </Link>
+        );
       },
     },
     {
-      title: "定金",
-      dataIndex: "deposit",
-      key: "deposit",
+      title: "订单量",
+      dataIndex: "brandOrders",
+      key: "brandOrders",
+      render: (brandOrders: IBrandOrder[], record) => {
+        // debugger
+        return (
+          <Tooltip
+            placement="topLeft"
+            title={
+              <ul>
+                {brandOrders?.map((item, index) => {
+                  return item.userOrders.map((_u) => (
+                    <li key={index}>{_u?.account?.username}</li>
+                  ));
+                })}
+              </ul>
+            }
+          >
+            <p>{brandOrders.length}笔</p>
+            {/* <p>{brandOrders.reduce((x, y) => x + y.userOrders.length, 0)}人</p> */}
+            {/* <p>{userOrders.length}人</p> */}
+          </Tooltip>
+          // <ul>
+          //   {userOrders.map((item, index) => {
+          //     return (
+          //       <li key={index}>
+          //         {item.account.username} - {item.account.email}
+          //       </li>
+          //     );
+          //   })}
+          // </ul>
+        );
+      },
     },
+
+    // {
+    //   title: "买家",
+    //   dataIndex: "account",
+    //   key: "account",
+    //   render: (account: IOrder["account"], record) => {
+    //     return <span className="font-bold">{account.username}</span>;
+    //   },
+    // },
+    // {
+    //   title: "定金",
+    //   dataIndex: "deposit",
+    //   key: "deposit",
+    // },
     // {
     //   title: "优惠活动",
     //   dataIndex: "discount",
     //   key: "discount",
     // },
+    // {
+    //   title: "尾款",
+    //   dataIndex: "finalPayment",
+    //   key: "finalPayment",
+    // },
+    // {
+    //   title: "快递信息",
+    //   dataIndex: "shipments",
+    //   key: "shipments",
+    //   render: (object: IOrder["shipments"], record) => {
+    //     return object ? (
+    //       <ul>
+    //         {object.map((item, index) => {
+    //           return (
+    //             <li key={index}>
+    //               {item.carrier} - {item.address}
+    //             </li>
+    //           );
+    //         })}
+    //       </ul>
+    //     ) : (
+    //       "暂无信息"
+    //     );
+    //   },
+    // },
+    // {
+    //   title: "创建日期",
+    //   dataIndex: "createdAt",
+    //   key: "createdAt",
+    //   align: "center",
+    //   render: (text) => {
+    //     // YYYY-MM-DD HH:mm:ss
+    //     return dayjs(text).format("YYYY-MM-DD HH:mm:ss");
+    //   },
+    // },
     {
-      title: "尾款",
-      dataIndex: "finalPayment",
-      key: "finalPayment",
-    },
-    {
-      title: "快递信息",
-      dataIndex: "shipments",
-      key: "shipments",
-      render: (object: IOrder["shipments"], record) => {
-        return object ? (
-          <ul>
-            {object.map((item, index) => {
-              return (
-                <li key={index}>
-                  {item.carrier} - {item.address}
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          "暂无信息"
-        );
-      },
-    },
-    {
-      title: "创建日期",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (text) => {
-        // YYYY-MM-DD
-        return dayjs(text).format("YYYY-MM-DD");
-      },
-    },
-    {
-      title: "状态",
-      dataIndex: "orderStatus",
-      key: "orderStatus",
-      render: (text, record) => {
-        switch (text) {
-          case "UNPAID":
-            return <span className="text-yellow-500">待付款</span>;
-          case "HALFPAID":
-            return <span className="text-green-500">已付定金</span>;
-          case "PAID":
-            return <span className="text-blue-500">已支付尾款</span>;
-          case "CANCELLED":
-            return <span className="text-red-500">已取消</span>;
-          default:
-            return <span className="text-red-500">未知状态</span>;
-        }
-      },
-    },
-    {
-      title: "操作",
-      dataIndex: "_id",
-      key: "_id",
+      title: "更新日期",
+      dataIndex: "updatedAt",
+      key: "updatedAt",
       align: "center",
-      render: (id, record) => {
-        return (
-          <div>
-            <Button
-              type="link"
-              onClick={() => {
-                setDrawOpen(true);
-                setDrawInfo(record.orderItems);
-              }}
-              className="text-green-400"
-            >
-              商品预览
-            </Button>
-            <Button
-              type="link"
-              onClick={() => {
-                setRecord(record);
-                setModalType("update");
-                setOpen(true);
-              }}
-            >
-              编辑
-            </Button>
-            <Popconfirm
-              title="确定删除吗？"
-              onConfirm={async () => {
-                await deleteOrder(id);
-                await refetch();
-              }}
-            >
-              <Button type="link" className="text-red-500">
-                删除
-              </Button>
-            </Popconfirm>
-          </div>
-        );
+      render: (text) => {
+        // YYYY-MM-DD HH:mm:ss
+        return dayjs(text).format("YYYY-MM-DD HH:mm:ss");
       },
     },
+    // {
+    //   title: "状态",
+    //   dataIndex: "orderStatus",
+    //   key: "orderStatus",
+    //   render: (text, record) => {
+    //     switch (text) {
+    //       case "UNPAID":
+    //         return <span className="text-yellow-500">待付款</span>;
+    //       case "HALFPAID":
+    //         return <span className="text-green-500">已付定金</span>;
+    //       case "PAID":
+    //         return <span className="text-blue-500">已支付尾款</span>;
+    //       case "CANCELLED":
+    //         return <span className="text-red-500">已取消</span>;
+    //       default:
+    //         return <span className="text-red-500">未知状态</span>;
+    //     }
+    //   },
+    // },
+    // {
+    //   title: "操作",
+    //   dataIndex: "_id",
+    //   key: "_id",
+    //   align: "center",
+    //   render: (id, record) => {
+    //     return (
+    //       <div>
+    //         <Button
+    //           type="link"
+    //           onClick={() => {
+    //             setDrawOpen(true);
+    //             setDrawInfo(record.orderItems);
+    //           }}
+    //           className="text-green-400"
+    //         >
+    //           商品预览
+    //         </Button>
+    //         <Button
+    //           type="link"
+    //           onClick={() => {
+    //             setRecord(record);
+    //             setModalType("update");
+    //             setOpen(true);
+    //           }}
+    //         >
+    //           编辑
+    //         </Button>
+    //         <Popconfirm
+    //           title="确定删除吗？"
+    //           onConfirm={async () => {
+    //             await deleteOrder(id);
+    //             await refetch();
+    //           }}
+    //         >
+    //           <Button type="link" className="text-red-500">
+    //             删除
+    //           </Button>
+    //         </Popconfirm>
+    //       </div>
+    //     );
+    //   },
+    // },
   ];
 
   return [columns];

@@ -8,7 +8,7 @@ import useColumns from "./columns";
 import { useQuery } from "@tanstack/react-query";
 import CreateButton from "./createButton";
 import ProductForm from "./form";
-import productQuery from "~app/api/groqs/product";
+import productQuery, { productRootQuery } from "~app/api/groqs/product";
 import { sanityClient } from "~base/sanity/client";
 import CherryVisionModal from "~components/CherryUI/Modal";
 import { fetchGlobal } from "~app/api/sanityRest/global";
@@ -29,7 +29,7 @@ const Root = () => {
         // start: 0,
       }),
   });
-  const [column] = useColumns();
+  const [column] = useColumns(refetch);
   if (status !== "success" || reponseGlobal.status !== "success") return null;
 
   return (

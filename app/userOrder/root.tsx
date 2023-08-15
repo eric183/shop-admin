@@ -1,17 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import useColumns from "./columns";
 import { useQuery } from "@tanstack/react-query";
 import CreateButton from "./createButton";
 import { IOrder, IOrderCreateSource } from "~types/order";
 import OrderForm from "./form";
-import { useRouter } from "next/router";
 import { fetchGlobal } from "~app/api/sanityRest/global";
 import OrderProductionDrawer from "./drawer";
-import orderQuery from "~app/api/groqs/order";
+import { userOrderQuery } from "~app/api/groqs/order";
 import { sanityClient } from "~base/sanity/client";
-import { MonthPicker } from "./Picker";
 import CherryTable from "~components/CherryUI/Table";
 import CherryVisionModal from "~components/CherryUI/Modal";
 
@@ -22,9 +19,9 @@ const Root = ({ year, month }: { year: string; month: string }) => {
   });
 
   const { data, status } = useQuery({
-    queryKey: ["order"],
+    queryKey: ["userOrder"],
     queryFn: async () =>
-      await sanityClient.fetch<IOrder[]>(orderQuery, {
+      await sanityClient.fetch<IOrder[]>(userOrderQuery, {
         dateRange: {
           gte: new Date(`${year}-${month}-01`),
           lt: new Date(`${year}-${Number(month) + 1}-01`),
@@ -56,6 +53,7 @@ const Root = ({ year, month }: { year: string; month: string }) => {
             {
               accounts: reponseGlobal.data.accounts,
               skus: reponseGlobal.data.skus,
+              brands: reponseGlobal.data.brands,
             } as const as IOrderCreateSource
           }
         />

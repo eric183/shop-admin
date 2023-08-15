@@ -35,6 +35,7 @@ const SideNav = () => {
                     >
                       <Link
                         href={r.path}
+                        prefetch={false}
                         className={clsx({
                           "w-full inline-block": true,
                           "text-white": pathname.includes(r.path),

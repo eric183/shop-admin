@@ -23,18 +23,18 @@ export const createSpuImages = async (
 };
 
 export const createProduct = async (_formData_: any) => {
-  const { name, category, brand, link, skus, images, _id } =
-    _formData_;
+  const { name, category, brand, images, _id, spu } = _formData_;
 
-  const spuId = _id ? _id : uuidv4();
   const brandID = brand._id ? brand._id : uuidv4();
-
+  const spuId = spu._id ? spu._id : uuidv4();
+  const skus = spu.skus;
+  const link = spu.link;
   const mutations: any = [
     {
       createOrReplace: {
         _id: spuId,
         _type: "spu",
-        name,
+        name: spu.name,
         category,
         brand: {
           _type: "reference",
@@ -50,30 +50,7 @@ export const createProduct = async (_formData_: any) => {
     mutations.push(
       ...skus.map(({ _id, attribute, price }: any) => {
         const skuId = _id ? _id : uuidv4();
-        // const foundInventory = inventories.find((i: any) =>
-        //   i.skus.find((x: any) => x?.id === skuId)
-        // );
 
-        debugger;
-        // const inventoryId = foundInventory ? foundInventory._id : uuidv4();
-
-        // mutations.push({
-        //   createOrReplace: {
-        //     _type: "inventory",
-        //     _id: inventoryId,
-        //     spu: {
-        //       _type: "reference",
-        //       _ref: spuId,
-        //     },
-        //     skus: [
-        //       {
-        //         // _type: "reference",
-        //         _key: uuidv4(),
-        //         id: skuId,
-        //       },
-        //     ],
-        //   },
-        // });
         return {
           createOrReplace: {
             _type: "sku",
@@ -95,7 +72,6 @@ export const createProduct = async (_formData_: any) => {
       _type: "brand",
       _id: brandID,
       name: brand.name,
-      ...brand,
     },
   });
 
@@ -103,8 +79,16 @@ export const createProduct = async (_formData_: any) => {
   return results;
 };
 
-export const updateProduct = async (spuId: string, formData: any, spu: any) => {
-  const { skus, category, brand, link, images, name, inventory } = formData;
+export const updateProduct = async (
+  spuId: string,
+  formData: any,
+  productInfo: any
+) => {
+  const { spu, _id, category, images, name, brand } = formData;
+  const { skus } = spu;
+
+  const brandID = brand._id;
+  const link = formData.spu.link;
   const mutations: any = [
     {
       patch: {
@@ -112,7 +96,10 @@ export const updateProduct = async (spuId: string, formData: any, spu: any) => {
         set: {
           name,
           category,
-          brand,
+          brand: {
+            _type: "reference",
+            _ref: brandID,
+          },
           link,
           images,
         },
@@ -121,29 +108,29 @@ export const updateProduct = async (spuId: string, formData: any, spu: any) => {
   ];
 
   if (skus) {
-    if (spu.skus.length > skus.length) {
+    if (productInfo.skus.length > skus.length) {
       // delete
-      const skuIds = skus.map((sku: { _id: any }) => sku._id!);
+      const skuIds = skus.map((sku: { _id: string }) => sku._id!);
 
-      const noSkuToDelete = spu.skus.filter((sku: { _id: any }) =>
+      const noSkuToDelete = productInfo.skus.filter((sku: { _id: string }) =>
         skuIds.includes(sku._id!)
       );
-      const skuToDelete = spu.skus.filter(
-        (sku: { _id: any }) => !skuIds.includes(sku._id!)
+
+      const skuToDelete = productInfo.skus.filter(
+        (sku: { _id: string }) => !skuIds.includes(sku._id!)
       );
 
       mutations.push(
-        ...skuToDelete.map((sku: { _id: any }) => {
-          const foundInventory = inventory?.find((i: any) =>
-            i.skus.find((x: any) => x?.id === sku._id)
-          );
-
-          const inventoryId = foundInventory!._id;
-          mutations.push({
-            delete: {
-              id: inventoryId,
-            },
-          });
+        ...skuToDelete.map((sku: { _id: string }) => {
+          // const foundInventory = inventory?.find((i: any) =>
+          //   i.skus.find((x: any) => x?.id === sku._id)
+          // );
+          // const inventoryId = foundInventory!._id;
+          // mutations.push({
+          //   delete: {
+          //     id: inventoryId,
+          //   },
+          // });
 
           return {
             delete: {
@@ -154,45 +141,45 @@ export const updateProduct = async (spuId: string, formData: any, spu: any) => {
       );
     } else {
       // create
-      const skuIds = spu.skus.map((sku: { _id: any }) => sku._id);
+      const skuIds = productInfo.skus.map((sku: { _id: string }) => sku._id);
       // const skuToCreate = skus.filter((sku) => !skuIds.includes(sku._id));
       mutations.push(
         ...skus.map(
           (sku: {
-            _id: any;
-            price: any;
-            attribute: { color: any; size: any };
+            _id: string;
+            price: string;
+            attribute: { color: string; size: string };
           }) => {
             const skuId = sku._id ? sku._id : uuidv4();
-            const foundInventory = inventory?.find((i: any) =>
-              i.skus.find((x: any) => x?.id === sku._id)
-            );
+            // const foundInventory = inventory?.find((i: any) =>
+            //   i.skus.find((x: any) => x?.id === sku._id)
+            // );
 
-            const inventoryId = foundInventory ? foundInventory._id : uuidv4();
+            // const inventoryId = foundInventory ? foundInventory._id : uuidv4();
 
-            mutations.push({
-              createOrReplace: {
-                _type: "inventory",
-                _id: inventoryId,
-                spu: {
-                  _type: "reference",
-                  _ref: spuId,
-                },
-                skus: [
-                  {
-                    _key: uuidv4(),
-                    id: skuId,
-                  },
-                ],
-              },
-            });
+            // mutations.push({
+            //   createOrReplace: {
+            //     _type: "inventory",
+            //     _id: inventoryId,
+            //     spu: {
+            //       _type: "reference",
+            //       _ref: spuId,
+            //     },
+            //     skus: [
+            //       {
+            //         _key: uuidv4(),
+            //         id: skuId,
+            //       },
+            //     ],
+            //   },
+            // });
             return {
               createOrReplace: {
                 _type: "sku",
                 _id: skuId,
                 spu: {
                   _type: "spu",
-                  _ref: spu._id,
+                  _ref: productInfo._id,
                 },
 
                 price: sku.price,
@@ -207,6 +194,15 @@ export const updateProduct = async (spuId: string, formData: any, spu: any) => {
       );
     }
   }
+
+  mutations.push({
+    createOrReplace: {
+      _type: "brand",
+      _id: brandID,
+      name: brand.name,
+      // ...brand,
+    },
+  });
 
   await sanityMutationClient({
     mutations,
@@ -223,22 +219,8 @@ export const deleteProduct = async (spu: any) => {
   ];
 
   const skuIds = spu.skus.map((sku: { _id: any }) => sku._id);
-  const inventoryIds = spu.inventory.map((i: { _id: any }) => i._id);
-
   mutations.push(
     ...skuIds.map((skuId: any) => {
-      const foundInventory = spu.inventory.find((i: any) =>
-        i.skus.find((x: any) => x?.id === skuId)
-      );
-
-      const inventoryId = foundInventory._id;
-
-      mutations.push({
-        delete: {
-          id: inventoryId,
-        },
-      });
-
       return {
         delete: {
           id: skuId,
@@ -246,6 +228,7 @@ export const deleteProduct = async (spu: any) => {
       };
     })
   );
+
   await sanityMutationClient({
     mutations,
   });

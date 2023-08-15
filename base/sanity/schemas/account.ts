@@ -65,6 +65,11 @@ export default defineType({
     },
     {
       type: "string",
+      name: "wxID",
+      title: "Wx ID",
+    },
+    {
+      type: "string",
       name: "email",
       title: "Email",
     },

@@ -12,6 +12,7 @@ import GoogleUploader, {
 import { modalStore } from "~components/CherryUI/Modal";
 import { IOrderCreateSource } from "~types/order";
 import { debug } from "console";
+import spu from "~base/sanity/schemas/spu";
 
 interface Props {
   datasource: IProduct[];
@@ -42,14 +43,19 @@ const ProductForm: React.FC<Props> = ({
     setRecord,
   } = modalStore();
   const [formData, setFormData] = useState<Partial<IProduct>>({
-    skus: [
-      {
-        attribute: {
-          color: "",
-          size: "",
+    spus: [],
+    spu: {
+      name: "",
+      link: "",
+      skus: [
+        {
+          attribute: {
+            color: "",
+            size: "",
+          },
         },
-      },
-    ],
+      ],
+    },
   });
 
   const [currentProducts, setCurrentProducts] = useState<IProduct[]>(products);
@@ -57,44 +63,37 @@ const ProductForm: React.FC<Props> = ({
 
   const selectRef = useRef<any>();
 
-  const defaultNameInit = (evt: string[]) => {
+  const defaultNameInit = (evt: string[], record) => {
     const name = evt[0];
-    const foundItem = products.find((item: IProduct) => item.name === name);
+    const foundItem = products.find(
+      (item: IProduct) => item.brand.name === name
+    );
 
     if (foundItem) {
       setMatchProduct(foundItem);
 
-      const currentImages = foundItem?.imageURLs
-        ? foundItem?.imageURLs.map((i: any) => i.asset)
+      const currentImages = foundItem?.images
+        ? foundItem?.images.map((i: any) => i.asset)
         : [];
       clearImageUrls();
 
       setImageUrls(currentImages);
-      // setImages(currentImages);
     } else {
-      // setImages(currentImages);
       setMatchProduct(null!);
     }
+    // deb
 
-    setFormData((prev) => ({
-      ...prev,
-      name,
-      category: foundItem?.category || "",
-      brand: foundItem?.brand || { name: "" },
-      link: foundItem?.link || "",
-      skus:
-        foundItem?.skus && foundItem?.skus.length > 0
-          ? foundItem?.skus
-          : [
-              {
-                attribute: {
-                  color: "",
-                  size: "",
-                },
-              },
-            ],
-      // inventory: foundItem?.inventory || [],
-    }));
+    setFormData({
+      ...record,
+      _id: record.brand._id,
+      spu: record,
+      link: record.link,
+      spus: brands.find((brand) => brand._id === record.brand._id)?.spus,
+      // images: record,
+      // category: record.category,
+      // link: record.link,
+      // skus: record.spu.skus,
+    });
 
     selectRef.current.blur();
   };
@@ -166,7 +165,7 @@ const ProductForm: React.FC<Props> = ({
 
     const { name, value } = evt.target;
 
-    const currentSku = formData.skus![Number(index)];
+    const currentSku = formData.spu!.skus![Number(index)];
 
     if (info === "price") {
       currentSku.price = Number(value);
@@ -175,7 +174,7 @@ const ProductForm: React.FC<Props> = ({
       attribute as keyof Sku
     ] as Sku["attribute"];
 
-    formData.skus![Number(index)] = {
+    formData.spu!.skus![Number(index)] = {
       ...currentSku,
       price: currentSku.price ? currentSku.price : 0,
       [attribute]: {
@@ -187,8 +186,12 @@ const ProductForm: React.FC<Props> = ({
 
     setFormData((prev) => ({
       ...prev,
-      skus: formData.skus!,
+      spu: {
+        ...prev.spu,
+        skus: formData.spu!.skus,
+      },
     }));
+    // skus: formData.spuskus!,
   };
 
   const inputChangeHandler = (evt: any) => {
@@ -204,13 +207,6 @@ const ProductForm: React.FC<Props> = ({
     evt.preventDefault();
     setConfirmLoading(true);
 
-    const { skus } = formData;
-
-    const _matchProduct = {
-      ...matchProduct,
-      skus,
-    };
-
     const imagesCreations = (imageUrls as IProduct["imageURLs"]).map(
       (image) => {
         return {
@@ -224,59 +220,28 @@ const ProductForm: React.FC<Props> = ({
       }
     );
 
-    const foundSPUData = products.find((x) => x.name === formData.name);
-    debugger;
-    // x.skus.some((m) =>
-    //   formData?.skus?.some((j) => j.attribute.size === m.attribute.size)
-    // )
-    if (foundSPUData) {
-      const foundSku = foundSPUData.skus.find(
-        (x) => x.attribute.size === formData?.skus![0]?.attribute.size
-      );
-      // if (foundSku) {
-      //   window.alert("该尺码已经存在，请检查");
-      //   setConfirmLoading(false);
-      //   return;
-      // }
-    }
-    // debugger;
-    // if (!matchProduct && modalType === "create") {
     if (modalType === "create") {
-      // const results = await createSpu(formData);
-
-      // _matchProduct = results[0].document;
-
       const createForm = {
         ...matchProduct,
         ...formData,
-        // inventories,
         images: imagesCreations,
       };
-
-      // debugger;
+      debugger;
       await createProduct(createForm);
     }
 
     if (modalType === "update") {
       await updateProduct(
-        _matchProduct._id,
+        matchProduct._id!,
         {
           ...formData,
           images: imagesCreations,
         },
         record
       );
-      // const skus = await updateSkus(_matchProduct._id, formData, record);
-      // // await updateInventory(_matchProduct._id, skus);
-      // await updateSpu(_matchProduct._id, {
-      //   ...formData,
-      //   images: imagesCreations,
-      // });
     }
 
-    setTimeout(async () => {
-      await refetch();
-    }, 1500);
+    await refetch();
 
     setConfirmLoading(false);
     setOpen(false);
@@ -288,16 +253,19 @@ const ProductForm: React.FC<Props> = ({
       name: undefined,
       category: "",
       brand: { name: "" },
-      link: "",
-      skus: [
-        {
-          price: 0,
-          attribute: {
-            color: "",
-            size: "",
+      spu: {
+        link: "",
+        name: "",
+        skus: [
+          {
+            price: 0,
+            attribute: {
+              color: "",
+              size: "",
+            },
           },
-        },
-      ],
+        ],
+      },
     });
     setImageUrls([]);
     setMatchProduct(null!);
@@ -305,27 +273,21 @@ const ProductForm: React.FC<Props> = ({
 
   const pasteBinder = (e) => {
     // debugger;
-    // const file = e.clipboardData.files[0];
-    // GoogleUploaderRef.current.uploadHandler([file]);
+
+    if (e.clipboardData.types[0] === "text/plain") return;
+    const file = e.clipboardData.files[0];
+
+    GoogleUploaderRef.current.uploadHandler([file]);
   };
 
   useEffect(() => {
     clearForm();
+
     if (record && open && modalType === "update") {
-      setFormData({
-        _id: record._id,
-        name: record.name,
-        category: record.category,
-        brand: record.brand,
-        link: record.link,
-        skus: record.skus,
-      });
-      defaultNameInit([record.name]);
+      defaultNameInit([record.brand.name], record);
       setMatchProduct(record);
     }
-  }, [open, record, modalType]);
-
-  console.log(products, "spu!!!");
+  }, [open]);
 
   return (
     <form
@@ -343,26 +305,33 @@ const ProductForm: React.FC<Props> = ({
           品牌
         </label>
         <Select
+          disabled={modalType === "update"}
           mode="tags"
           size="small"
           maxTagCount={1}
           placeholder="请选择品牌"
           onChange={(detail, de) => {
-            const foundBrand = brands.find((item) => item._id === detail[0]);
+            const foundBrand = brands.find((item) =>
+              detail.length >= 2
+                ? item._id === detail[1]
+                : item._id === detail[0]
+            );
+            brandSelectRef.current.blur();
 
-            // setSelectedBrand(foundBrand!);
-            // if (!foundBrand) {
+            const brand = foundBrand
+              ? foundBrand
+              : { name: detail[0]!, _id: undefined, spus: [] as any };
+
             setFormData((prev) => ({
               ...prev,
-              brand: foundBrand ? foundBrand : { name: detail[0]! },
+              brand,
+              spus: brand.spus,
             }));
-            // }
-            brandSelectRef.current.blur();
           }}
           className="w-full mt-2"
           choiceTransitionName="name"
           ref={brandSelectRef}
-          value={formData.brand?._id}
+          value={formData?.brand?._id}
         >
           {brands.map((item, index: number) => (
             <Select.Option key={index} value={item._id}>
@@ -374,46 +343,86 @@ const ProductForm: React.FC<Props> = ({
 
       <div className="relative z-0 w-full mb-3 mt-8 group flex flex-col">
         <label
-          htmlFor="name"
+          htmlFor="spuName"
           className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
         >
-          SPU 名称
+          品类名称
         </label>
         <Select
+          disabled={modalType === "update"}
           mode="tags"
           size="small"
           maxTagCount={1}
-          placeholder="请选择 spu 名称"
-          onChange={(event, dd) => {
-            const foundSPU = products.find((s) => s._id === event[0]);
+          placeholder="请选择品类名称"
+          onChange={(detail, dd) => {
+            const foundSPU = products.find((s) =>
+              detail.length >= 2 ? s._id === detail[1] : s._id === detail[0]
+            );
 
             selectRef.current.blur();
 
-            if (!foundSPU && event.length === 0) {
+            if (!foundSPU && detail.length === 0) {
               setFormData({
                 ...formData,
                 // name: event[0],
-                _id: undefined,
-                name: "",
+                spu: {
+                  _id: undefined,
+                  name: "",
+                  link: "",
+                  skus: [
+                    {
+                      price: 0,
+                      attribute: {
+                        color: "",
+                        size: "",
+                      },
+                    },
+                  ],
+                },
               });
               return;
             }
 
             const d = {
               ...formData,
-
-              name: foundSPU ? foundSPU.name : event[0],
+              spu: foundSPU
+                ? {
+                    ...foundSPU,
+                    skus: [
+                      {
+                        price: 0,
+                        attribute: {
+                          color: "",
+                          size: "",
+                        },
+                      },
+                    ],
+                  }
+                : {
+                    link: "",
+                    _id: undefined,
+                    name: detail[0],
+                    skus: [
+                      {
+                        price: 0,
+                        attribute: {
+                          color: "",
+                          size: "",
+                        },
+                      },
+                    ],
+                  },
             } as any;
 
             // setCurrentSpus((prev) => [...prev, d!]);
             setFormData(d);
           }}
           className="w-full mt-2"
-          choiceTransitionName="name"
+          choiceTransitionName="spuName"
           ref={selectRef}
-          value={formData._id as any}
+          value={formData?.spu?._id as any}
         >
-          {products.map((item: IProduct, index: number) => (
+          {formData.spus?.map((item: IProduct, index: number) => (
             <Select.Option key={index} value={item._id}>
               {item.name}
             </Select.Option>
@@ -429,36 +438,55 @@ const ProductForm: React.FC<Props> = ({
             width={24}
             color="#1D4ED8"
             onClick={() => {
-              setFormData((prev) => ({
-                ...prev,
-                skus: [
-                  ...(prev.skus ? prev.skus : []),
-                  {
-                    attribute: {
-                      color: "",
-                      size: "",
+              setFormData((prev) => {
+                if (prev.spu?.skus) {
+                  return {
+                    ...prev,
+                    spu: {
+                      ...prev.spu,
+                      skus: [
+                        ...(prev.spu.skus ? prev.spu.skus : []),
+                        {
+                          price: 0,
+                          attribute: {
+                            color: "",
+                            size: "",
+                          },
+                        },
+                      ],
                     },
-                  },
-                ],
-              }));
+                  };
+                }
+
+                return prev;
+              });
             }}
           />
         </label>
         <div className="my-10"></div>
-        {formData.skus?.map((sku, index) => (
+        {formData.spu!.skus?.map((sku, index) => (
           <div className="grid md:grid-cols-3 md:gap-6 pl-8" key={index}>
             <MinusCircleIcon
               className="absolute left-0 translate-y-1/2 mt-1.5 hover:fill-blue-500 cursor-pointer transition"
               width={18}
               color="gray"
               onClick={() => {
-                setFormData((prev) => ({
-                  ...prev,
-                  skus: [
-                    ...prev.skus!.slice(0, index),
-                    ...prev.skus!.slice(index + 1),
-                  ],
-                }));
+                setFormData((prev) => {
+                  if (prev.spu?.skus) {
+                    return {
+                      ...prev,
+                      spu: {
+                        ...prev.spu,
+                        skus: [
+                          ...prev.spu.skus!.slice(0, index),
+                          ...prev.spu.skus!.slice(index + 1),
+                        ],
+                      },
+                    };
+                  }
+
+                  return prev;
+                });
               }}
             />
             <div className="relative z-0 w-full mb-3 group">
@@ -526,8 +554,16 @@ const ProductForm: React.FC<Props> = ({
           id="link"
           className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
           placeholder=" "
-          value={formData.link}
-          onChange={inputChangeHandler}
+          value={formData.spu?.link as string}
+          onChange={(evt: any) => {
+            setFormData((prev) => ({
+              ...prev,
+              spu: {
+                ...prev.spu,
+                link: evt.target.value,
+              },
+            }));
+          }}
         />
         <label
           htmlFor="link"
@@ -546,7 +582,6 @@ const ProductForm: React.FC<Props> = ({
             confirmLoading,
           "w-38 bg-blue-700 hover:bg-blue-800 ": !confirmLoading,
         })}
-        // disabled={confirmLoading ? true : false}
       >
         {confirmLoading && (
           <svg

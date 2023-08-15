@@ -9,6 +9,8 @@ import { IProduct } from "~types/product";
 export const modalStore = create<{
   open: boolean;
   setOpen: (arg: boolean) => void;
+  orderOpen: boolean;
+  setOrderOpen: (arg: boolean) => void;
   title: string;
   setTitle: (arg: string) => void;
   confirmLoading: boolean;
@@ -20,6 +22,8 @@ export const modalStore = create<{
 }>()((set) => ({
   open: false,
   setOpen: (arg: boolean) => set({ open: arg }),
+  orderOpen: false,
+  setOrderOpen: (arg: boolean) => set({ orderOpen: arg }),
   title: "",
   setTitle: (arg: string) => set({ title: arg }),
   confirmLoading: false,

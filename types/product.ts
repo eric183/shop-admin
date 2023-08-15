@@ -4,20 +4,25 @@ export interface IProduct {
   _id?: string;
   category: string;
   _createdAt: string;
-  name: string;
+  name?: string;
   brand: {
     // [key: string]: string | number;
     _id?: string;
     logo?: string;
     name: string;
   };
+  spus?: [];
+  skus?: [];
   spu: {
+    imageURLs?: ImageURL[];
     _id?: string;
-    name: string;
+    name?: string;
+    skus?: Sku[];
+    link?: string;
   };
-  link: string;
   imageURLs: ImageURL[];
-  skus: Sku[];
+  images?: ImageURL[];
+  // skus: Sku[];
   _updatedAt: string;
   price: number;
   // inventories: {
@@ -36,6 +41,7 @@ export interface IProduct {
   // }[];
 }
 
+type images = string[];
 interface ImageURL {
   _id?: string;
   asset: Asset;
@@ -53,6 +59,7 @@ export interface Sku {
   _id?: string;
   _ref?: null;
   attribute: Attribute;
+  spu?: IProduct["spu"] & { spuId: string };
   // quantity?: number;
 }
 
