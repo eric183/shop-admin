@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Table } from "antd";
+import { Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { toYMD, toYMD_Short } from "~base/Timeformat";
 interface DataType {

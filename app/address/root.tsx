@@ -4,7 +4,6 @@ import * as Form from "@radix-ui/react-form";
 import React, { useEffect } from "react";
 import Modal, { modalStore } from "~components/CherryUI/Modal";
 import CreateButton from "./createButton";
-import { sanityClient } from "~base/sanity/client";
 import { createAddress } from "~app/api/sanityRest/address";
 import CherryTable from "~components/CherryUI/Table";
 import useColumns from "./columns";
@@ -52,8 +51,6 @@ const Root = ({ addressList }: any) => {
 
     setAddressList([..._addressList, ...results]);
   };
-
-
 
   return (
     <div className="address-container">

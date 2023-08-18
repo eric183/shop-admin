@@ -1,8 +1,6 @@
-import { sanityClient, sanityMutationClient } from "~base/sanity/client";
-import { IOrder, IOrderCreateSource } from "~types/order";
+import { sanityMutationClient } from "~base/sanity/client";
+import { IOrder } from "~types/order";
 import { v4 as uuidv4 } from "uuid";
-import { IOrderFormDto } from "~app/brandOrder/form";
-import { orderWithBrandsQuery } from "../groqs/global";
 import { IBrandOrder } from "~types/brandOrder";
 
 export const createOrderSampler = async (order: any) => {
@@ -21,7 +19,6 @@ export const createOrderSampler = async (order: any) => {
           account: {
             _type: "reference",
             _ref: account._id,
-            // weak: true,
           },
           deposit,
           finalPayment,
@@ -29,7 +26,6 @@ export const createOrderSampler = async (order: any) => {
             _type: "reference",
             _ref: orderItem._id,
             _key: uuidv4(),
-            // weak: true,
           })),
           orderStatus,
           sortNumber,
@@ -50,7 +46,6 @@ export const createOrderSampler = async (order: any) => {
             sku: {
               _type: "reference",
               _ref: orderItem.sku._id,
-              // weak: true,
             },
             preOrderPrice: orderItem.preOrderPrice,
             quantity: orderItem.quantity,
@@ -63,60 +58,13 @@ export const createOrderSampler = async (order: any) => {
   });
 };
 
-// export const createOrderItem = async (brandOrders: IBrandOrder) => {
-//   const { userOrders } = brandOrders;
-//   const createUserOrderQ: any = [];
-//   const userId = uuidv4();
-
-//   userOrders.forEach((order) => {
-//     order.orderItems.forEach((orderItem) => {
-//       orderItem._id = uuidv4();
-//       order.account._key = uuidv4();
-//       createUserOrderQ.push({
-//         create: {
-//           _type: "orderItem",
-//           _id: orderItem._id,
-//           sku: {
-//             _type: "reference",
-//             _ref: orderItem.sku._id,
-//           },
-//           userOrder: {
-//             _type: "reference",
-//             _ref: userId,
-//           },
-//           preOrderPrice: orderItem.preOrderPrice,
-//           quantity: orderItem.quantity,
-//           isProductionPurchased: orderItem.isProductionPurchased,
-//         },
-//       });
-//     });
-//   });
-
-//   return await sanityMutationClient({
-//     mutations: createUserOrderQ,
-//   });
-// };
-
 export const createOrder = async (
   brandOrder: IBrandOrder,
   originOrderItems?: IBrandOrder["userOrders"][0]["orderItems"]
 ) => {
-  // let _userOrders = userOrders;
   const formatOrder: any = [];
   const brandOrderId = brandOrder._id ? brandOrder._id : uuidv4();
-  // const _userOrdersResponse: IBrandOrder["userOrders"] = (
-  //   await sanityClient.fetch(orderWithBrandsQuery, {
-  //     orderId: brandOrder._id,
-  //     // dateRange: {
-  //     //   from: "2021-01-01",
-  //     //   to: "2021-12-31",
-  //     // },
-  //   })
-  // ).map((x: any) => x.userOrders)[0];
-  // _userOrders = _userOrdersResponse
-  //   ? [..._userOrders, ..._userOrdersResponse]
-  //   : _userOrders;
-  // debugger
+
   formatOrder.push({
     createOrReplace: {
       _type: "brandOrder",
@@ -199,22 +147,12 @@ export const updateOrderItem = async (
   orderForm: IBrandOrder,
   record: IBrandOrder
 ) => {
-  // single
-  // record.orderItems = record.userOrders[0].orderItems
-  //   ? record.userOrders[0].orderItems
-  //   : [];
-  // record.orderItems = record.orderItems ? record.orderItems : [];
   let response;
   if (
     orderForm.userOrders[0].orderItems.length <
     record.userOrders[0].orderItems.length
   ) {
-    const newOrderItems = record.userOrders[0].orderItems.filter(
-      (c) =>
-        !orderForm.userOrders[0].orderItems.map((x) => x._id).includes(c._id)
-    );
-
-    const response = await sanityMutationClient({
+    await sanityMutationClient({
       mutations: {
         patch: {
           id: record._id,
@@ -226,20 +164,6 @@ export const updateOrderItem = async (
           },
         },
       },
-      // newOrderItems.map((orderItem) => ({
-      //   delete: {
-      //     // _type: "orderItem",
-      //     id: orderItem._id,
-      //     // sku: {
-      //     //   _type: "reference",
-      //     //   _ref: orderItem.sku,
-      //     //   // weak: true,
-      //     // },
-      //     // preOrderPrice: orderItem.preOrderPrice,
-      //     // quantity: orderItem.quantity,
-      //     // isProductionPurchased: orderItem.isProductionPurchased,
-      //   },
-      // })),
     });
   }
 
@@ -248,70 +172,38 @@ export const updateOrderItem = async (
     record.userOrders[0].orderItems.length
   ) {
     response = await sanityMutationClient({
-      mutations: orderForm.userOrders[0].orderItems.map(
-        (orderItem) =>
-          orderItem._id
-            ? {
-                ...{
-                  // replace: {
-                  //   _type: "orderItem",
-                  //   _id: uuidv4(),
-                  //   sku: {
-                  //     _type: "reference",
-                  //     _ref: orderItem.sku,
-                  //     weak: true,
-                  //   },
-                  //   preOrderPrice: orderItem.preOrderPrice,
-                  //   quantity: orderItem.quantity,
-                  //   isProductionPurchased: orderItem.isProductionPurchased,
-                  // },
-                  patch: {
-                    id: orderItem._id,
-                    // id: ._id,
-                    set: {
-                      preOrderPrice: orderItem.preOrderPrice,
-                      quantity: orderItem.quantity,
-                      isProductionPurchased: orderItem.isProductionPurchased,
-                      // discount: orderItem.discount,
+      mutations: orderForm.userOrders[0].orderItems.map((orderItem) =>
+        orderItem._id
+          ? {
+              ...{
+                patch: {
+                  id: orderItem._id,
+                  set: {
+                    preOrderPrice: orderItem.preOrderPrice,
+                    quantity: orderItem.quantity,
+                    isProductionPurchased: orderItem.isProductionPurchased,
 
-                      orderItems: {
-                        _type: "reference",
-                        _ref: orderItem.sku._id,
-                      },
+                    orderItems: {
+                      _type: "reference",
+                      _ref: orderItem.sku._id,
                     },
                   },
                 },
-              }
-            : {
-                create: {
-                  _type: "orderItem",
-                  _id: uuidv4(),
-                  sku: {
-                    _type: "reference",
-                    _ref: orderItem.sku._id,
-                  },
-                  preOrderPrice: orderItem.preOrderPrice,
-                  quantity: orderItem.quantity,
-                  isProductionPurchased: orderItem.isProductionPurchased,
-                  // discount: orderItem.discount,
+              },
+            }
+          : {
+              create: {
+                _type: "orderItem",
+                _id: uuidv4(),
+                sku: {
+                  _type: "reference",
+                  _ref: orderItem.sku._id,
                 },
-              }
-
-        // {
-        //   patch: orderItem._id
-        //     ? {
-        //         id: orderItem._id,
-        //         set: {
-        //           orderItems: {
-        //             _type: "reference",
-        //             _ref: orderItem.sku._id,
-        //           },
-        //           quantity: orderItem.quantity,
-        //           isProductionPurchased: orderItem.isProductionPurchased,
-        //         },
-        //       }
-        //     : {},
-        // }
+                preOrderPrice: orderItem.preOrderPrice,
+                quantity: orderItem.quantity,
+                isProductionPurchased: orderItem.isProductionPurchased,
+              },
+            }
       ),
     });
   }
@@ -329,7 +221,6 @@ export const updateOrder = async (
     }[];
   }
 ) => {
-  // const { account, finalPayment, orderStatus, sortNumber } = order;
   const { account, finalPayment, orderStatus, deposit, discount } =
     order.userOrders[0];
   const orderItems = response.results.map(
@@ -344,19 +235,16 @@ export const updateOrder = async (
             account: {
               _type: "reference",
               _ref: account._id,
-              // weak: true,
             },
             orderItems: orderItems.map((orderItem) => ({
               _type: "reference",
               _ref: orderItem._id,
               _key: uuidv4(),
-              // weak: true,
             })),
             deposit,
             finalPayment,
             orderStatus,
             discount,
-            // sortNumber,
           },
         },
       },

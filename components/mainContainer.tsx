@@ -1,12 +1,11 @@
 "use client";
 
-import { getServerSession } from "next-auth";
 import AuthContainer from "./authContainer";
 import PageContainer from "./pageContainer";
 import { useSession } from "next-auth/react";
 
 const MainConainer = ({ children }: { children: React.ReactNode }) => {
-  const { data, status } = useSession();
+  const { status } = useSession();
 
   return status === "authenticated" ? (
     // return status === "authenticated" ? (
