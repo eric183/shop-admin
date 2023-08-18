@@ -51,8 +51,9 @@ const BrandOrder = async (props: {
         <div className="grid grid-cols-4 gap-2">
           {new Array(12).fill(0).map((_, index) => (
             <Link
-              href={`/brandOrder?year=${year}&month=${index + 1}`}
               key={index}
+              href={`/brandOrder?year=${year}&month=${index + 1}`}
+              prefetch={false}
             >
               <div className="h-48 rounded-md bg-sky-200 text-gray-600 font-extrabold text-4xl flex items-center justify-center">
                 {index + 1} 月

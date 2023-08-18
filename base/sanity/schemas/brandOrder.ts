@@ -16,21 +16,21 @@ export default defineType({
         },
       ],
     },
-    {
-      type: "array",
-      name: "userOrders",
-      title: "UserOrders",
-      of: [
-        {
-          type: "reference",
-          to: [
-            {
-              type: "userOrder",
-            },
-          ],
-        },
-      ],
-    },
+    // {
+    //   type: "array",
+    //   name: "userOrders",
+    //   title: "UserOrders",
+    //   of: [
+    //     {
+    //       type: "reference",
+    //       to: [
+    //         {
+    //           type: "userOrder",
+    //         },
+    //       ],
+    //     },
+    //   ],
+    // },
     {
       type: "array",
       name: "shipments",

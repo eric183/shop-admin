@@ -13,6 +13,13 @@ export default defineType({
     //   to: [{ type: "account" }],
     // },
     {
+      type: "reference",
+      name: "userOrder",
+      title: "User Order",
+      description: "用户订单",
+      to: [{ type: "userOrder" }],
+    },
+    {
       name: "sku",
       title: "Order Sku",
       type: "reference",

@@ -14,6 +14,7 @@ import { modalStore } from "~components/CherryUI/Modal";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { IBrandOrder } from "~types/brandOrder";
 import user from "~base/sanity/schemas/user";
+import { IProduct } from "~types/product";
 // import { usePathname } from "next/navigation";
 
 const useBrandColumns = (
@@ -48,12 +49,7 @@ const useBrandColumns = (
             key: "orderItems",
             render: (orderItems) => {
               return (
-                // eslint-disable-next-line jsx-a11y/alt-text
-                <Image
-                  src={orderItems[0].sku.spu.images[0]}
-                  width={50}
-                  height={50}
-                />
+                <ImagePreviewTool images={orderItems[0]?.sku?.spu?.images} />
               );
             },
           },
@@ -139,24 +135,13 @@ const useBrandColumns = (
                   <Button
                     type="link"
                     onClick={() => {
-                      console.log(data);
-                      console.log(record);
-                      // {
-                      //   _id: "",
-                      //   brand: {
-                      //     _id: "",
-                      //     name: "",
-                      //   },
-                      //   userOrders: [defaultUserOrder],
-                      //   createdAt: "",
-                      //   updatedAt: "",
-                      // }
-                      const d = data.brandOrders.find(
-                        (x) => x._id === brandOrderId
+                      const currentOrder = data.brandOrders.find(
+                        (x: { userOrders: IBrandOrder["userOrders"] }) =>
+                          x.userOrders.find((u) => u._id === id)
                       );
-                      // debugger;
+
                       setRecord({
-                        _id: data._id,
+                        _id: currentOrder._id,
                         brand: {
                           _id: data._id,
                           name: data.name,
@@ -192,9 +177,9 @@ const useBrandColumns = (
             dataIndex: "name",
             key: "name",
             render: (name: string, record) => {
-              debugger;
               return (
                 <Link
+                  prefetch={false}
                   href={
                     pathname +
                     "?" +
@@ -241,53 +226,40 @@ const useBrandColumns = (
               return dayjs(text).format("YYYY-MM-DD HH:mm:ss");
             },
           },
-          // {
-          //   title: "操作",
-          //   dataIndex: "_id",
-          //   key: "_id",
-          //   align: "center",
-          //   render: (id, record) => {
-          //     return (
-          //       <div>
-          //         {/* <Button
-          //           type="link"
-          //           onClick={() => {
-          //             setDrawOpen(true);
-          //             setDrawInfo(record.orderItems);
-          //           }}
-          //           className="text-green-400"
-          //         >
-          //           商品预览
-          //         </Button> */}
-          //         <Button
-          //           type="link"
-          //           onClick={() => {
-          //             setRecord(record);
-          //             setModalType("update");
-          //             setOpen(true);
-          //           }}
-          //         >
-          //           编辑
-          //         </Button>
-          //         <Popconfirm
-          //           title="确定删除吗？"
-          //           onConfirm={async () => {
-          //             await deleteOrder(id);
-          //             await refetch();
-          //           }}
-          //         >
-          //           <Button type="link" className="text-red-500">
-          //             删除
-          //           </Button>
-          //         </Popconfirm>
-          //       </div>
-          //     );
-          //   },
-          // },
         ];
 
   return [columns];
   // return [userOrderId ? userOrderColumns : columns];
+};
+
+const ImagePreviewTool: React.FC<{ images: string[] }> = ({ images }) => {
+  const [visible, setVisible] = useState(false);
+  return (
+    <>
+      {images && (
+        <Image
+          preview={{ visible: false }}
+          width={50}
+          alt="Preview Image"
+          src={images[0] ? images[0] : ""}
+          onClick={() => setVisible(true)}
+        />
+      )}
+      <div style={{ display: "none" }}>
+        <Image.PreviewGroup
+          preview={{ visible, onVisibleChange: (vis) => setVisible(vis) }}
+        >
+          {images?.map((image, index) => (
+            <Image
+              src={image as unknown as string}
+              key={index}
+              alt="previewer"
+            />
+          ))}
+        </Image.PreviewGroup>
+      </div>
+    </>
+  );
 };
 
 export default useBrandColumns;

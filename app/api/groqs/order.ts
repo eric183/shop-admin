@@ -20,21 +20,24 @@ export const brandOrderQuery = groq`*[_type == "brand" && _createdAt >= $dateRan
   name,
   "brandOrders": *[_type == "brandOrder" && brand._ref == ^._id]{
     _id,
-    "userOrders": userOrders[]-> {
+    "userOrders": *[ _type == "userOrder" && brandOrder._ref == ^._id] {
       _id,
       "account": account-> { _id, username },
-      "orderItems": orderItems[]-> {
+      "orderItems": *[ _type == "orderItem" && userOrder._ref == ^._id] {
         _id,
         quantity,
         preOrderPrice,
         "_ref": ^._id,
         "sku": *[_type == "sku" && _id == ^.sku._ref][0] {
           _id,
-          "color": attribute.color,
-          "size": attribute.size,
+          "attribute": {
+            "color": attribute.color,
+            "size": attribute.size,
+          },
           "spuColorSize": *[_type == "spu" && _id == ^.spu._ref] {_id, name}[0].name + " : " + attribute.color + " - " + attribute.size,
           "spu": *[_type == "spu" && _id == ^.spu._ref][0] {
             _id, 
+            "spuId": _id,
             name,
             "images": images[].asset->url, 
           }

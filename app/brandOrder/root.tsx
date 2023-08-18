@@ -45,7 +45,7 @@ const Root = ({
         // start: 0,
       }),
   });
-
+  console.log(status, "status.....");
   const [column] = useColumns(reponseGlobal.refetch);
   if (status !== "success" || reponseGlobal.status !== "success") return null;
 

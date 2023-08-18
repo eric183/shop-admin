@@ -1,6 +1,5 @@
 import { sanityClient } from "~base/sanity/client";
 import Root from "./root";
-import orderQuery from "~app/api/groqs/order";
 import { IOrder } from "~types/order";
 import Link from "next/link";
 import { YearPicker } from "./Picker";

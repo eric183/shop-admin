@@ -61,14 +61,15 @@ const BrandRoot = ({
 
   const brandOrderInfo = data.find((b: any) => b?._id === brandId);
 
-  const brandOrders = brandOrderInfo.brandOrders.map((b) => ({
+  const brandOrders = brandOrderInfo.brandOrders.map((b: { _id: any }) => ({
     ...b,
     name: brandOrderInfo.name,
     _id: b._id,
   }));
 
   const datasource = brandOrderId
-    ? brandOrders.find((x) => x._id === brandOrderId).userOrders
+    ? brandOrders.find((x: { _id: string }) => x._id === brandOrderId)
+        .userOrders
     : brandOrders;
 
   return (

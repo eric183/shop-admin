@@ -29,7 +29,11 @@ export const modalStore = create<{
   confirmLoading: false,
   setConfirmLoading: (arg: boolean) => set({ confirmLoading: arg }),
   record: {} as any,
-  setRecord: (arg: any) => set({ record: arg }),
+  setRecord: (arg: any) => {
+    set((state) => ({
+      record: { ...arg },
+    }));
+  },
   modalType: "create",
   setModalType: (arg: "create" | "update") => set({ modalType: arg }),
 }));
@@ -43,7 +47,7 @@ const CherryVisionModal: React.FC<ICherryVisionModal> = ({ children }) => {
   const handleCancel = () => {
     setOpen(false);
   };
-  console.log(open, "isopen");
+  // console.log(open, "isopen");
   return (
     <Modal
       title={title}

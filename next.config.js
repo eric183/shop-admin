@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // reactStrictMode: false,
-  reactStrictMode: true,
+  reactStrictMode: false,
+
   swcMinify: true,
   images: {
     domains: ["cdn.sanity.io"],

@@ -63,7 +63,8 @@ const ProductForm: React.FC<Props> = ({
 
   const selectRef = useRef<any>();
 
-  const defaultNameInit = (evt: string[], record) => {
+  // tofix: any
+  const defaultNameInit = (evt: string[], record: any) => {
     const name = evt[0];
     const foundItem = products.find(
       (item: IProduct) => item.brand.name === name
@@ -226,7 +227,7 @@ const ProductForm: React.FC<Props> = ({
         ...formData,
         images: imagesCreations,
       };
-      debugger;
+
       await createProduct(createForm);
     }
 
@@ -271,7 +272,7 @@ const ProductForm: React.FC<Props> = ({
     setMatchProduct(null!);
   };
 
-  const pasteBinder = (e) => {
+  const pasteBinder = (e: React.ClipboardEvent<HTMLFormElement>) => {
     // debugger;
 
     if (e.clipboardData.types[0] === "text/plain") return;

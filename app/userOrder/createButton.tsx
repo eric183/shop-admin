@@ -2,11 +2,12 @@
 
 import { GradientButton } from "~components/CherryUI/Buttons";
 import { modalStore } from "~components/CherryUI/Modal";
+import { IBrandOrder } from "~types/brandOrder";
 
 import { IOrder } from "~types/order";
 
 interface Props {
-  datasource: IOrder[];
+  datasource: IBrandOrder["userOrders"];
 }
 
 const CreateButton = ({ datasource }: Props) => {

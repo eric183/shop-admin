@@ -45,7 +45,7 @@ const Root = ({ addressList }: any) => {
         }
         return x;
       });
-      setCacheToRedis(newAddressList);
+      // setCacheToRedis(newAddressList);
       setAddressList([...newAddressList]);
       return;
     }
@@ -53,21 +53,7 @@ const Root = ({ addressList }: any) => {
     setAddressList([..._addressList, ...results]);
   };
 
-  const setCacheToRedis = (newAddressList: any) => {
-    fetch(
-      `https://apn1-stable-mako-33189.upstash.io/set/addressList/${JSON.stringify(
-        newAddressList
-      )}`,
-      {
-        headers: {
-          Authorization:
-            "Bearer AYGlACQgZTE0ZDY2MTYtNDBjZS00NTVkLTk5MjMtNjM0NmM5ZGU1YjcyYjRjYjJmNzgzNTMxNDUxNmE5NzJjOWIzYWNkNGM5OTA=",
-        },
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => console.log(data));
-  };
+
 
   return (
     <div className="address-container">

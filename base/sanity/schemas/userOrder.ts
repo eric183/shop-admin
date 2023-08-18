@@ -16,17 +16,12 @@ export default defineType({
       ],
     },
     {
-      type: "array",
-      name: "orderItems",
-      title: "Order Items",
-      of: [
+      type: "reference",
+      name: "brandOrder",
+      title: "Brand Order",
+      to: [
         {
-          type: "reference",
-          to: [
-            {
-              type: "orderItem",
-            },
-          ],
+          type: "brandOrder",
         },
       ],
     },

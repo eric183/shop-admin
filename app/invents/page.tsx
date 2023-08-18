@@ -3,8 +3,6 @@
 import { Button, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { toYMD, toYMD_Short } from "~base/Timeformat";
-import GoogleUploader from "~components/Layout/GoogleUploader";
-
 interface DataType {
   key: string;
   name: string;

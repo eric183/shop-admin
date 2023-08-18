@@ -4,13 +4,13 @@ import useColumns from "./columns";
 import { useQuery } from "@tanstack/react-query";
 import CreateButton from "./createButton";
 import { IOrder, IOrderCreateSource } from "~types/order";
-import OrderForm from "./form";
 import { fetchGlobal } from "~app/api/sanityRest/global";
 import OrderProductionDrawer from "./drawer";
 import { userOrderQuery } from "~app/api/groqs/order";
 import { sanityClient } from "~base/sanity/client";
 import CherryTable from "~components/CherryUI/Table";
 import CherryVisionModal from "~components/CherryUI/Modal";
+import { IBrandOrder } from "~types/brandOrder";
 
 const Root = ({ year, month }: { year: string; month: string }) => {
   const reponseGlobal = useQuery({
@@ -21,7 +21,7 @@ const Root = ({ year, month }: { year: string; month: string }) => {
   const { data, status } = useQuery({
     queryKey: ["userOrder"],
     queryFn: async () =>
-      await sanityClient.fetch<IOrder[]>(userOrderQuery, {
+      await sanityClient.fetch<IBrandOrder["userOrders"]>(userOrderQuery, {
         dateRange: {
           gte: new Date(`${year}-${month}-01`),
           lt: new Date(`${year}-${Number(month) + 1}-01`),
@@ -46,7 +46,7 @@ const Root = ({ year, month }: { year: string; month: string }) => {
       {/* <MonthPicker month={month} /> */}
       <CreateButton datasource={data} />
 
-      <CherryVisionModal>
+      {/* <CherryVisionModal>
         <OrderForm
           datasource={data}
           createSource={
@@ -57,11 +57,11 @@ const Root = ({ year, month }: { year: string; month: string }) => {
             } as const as IOrderCreateSource
           }
         />
-      </CherryVisionModal>
+      </CherryVisionModal> */}
 
       <OrderProductionDrawer />
       <section>
-        <CherryTable<IOrder>
+        <CherryTable<IBrandOrder["userOrders"][0]>
           datasource={data}
           columns={column}
           keyIndex={"_id"}

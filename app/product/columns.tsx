@@ -5,7 +5,14 @@ import Link from "next/link";
 import { IOrder } from "~types/order";
 import { IProduct } from "~types/product";
 import { Button, Image, Popconfirm, Tooltip } from "antd";
-import { useState } from "react";
+import {
+  JSXElementConstructor,
+  Key,
+  ReactElement,
+  ReactFragment,
+  ReactPortal,
+  useState,
+} from "react";
 import { modalStore } from "~components/CherryUI/Modal";
 import { sanityClient } from "~base/sanity/client";
 import { getProductId } from "~app/api/groqs/product";
@@ -61,14 +68,30 @@ const useColumns = (refetch: () => void) => {
       render(skus, record, index) {
         return (
           <ul>
-            {skus.map((sku, index) => {
-              return (
-                <li key={index}>
-                  [{sku.attribute.color.toLocaleLowerCase()} -{"  "}
-                  {sku.attribute.size.toLocaleUpperCase()}] / ${sku.price}
-                </li>
-              );
-            })}
+            {skus.map(
+              (
+                sku: {
+                  attribute: { color: string; size: string };
+                  price:
+                    | string
+                    | number
+                    | boolean
+                    | ReactElement<any, string | JSXElementConstructor<any>>
+                    | ReactFragment
+                    | ReactPortal
+                    | null
+                    | undefined;
+                },
+                index: Key | null | undefined
+              ) => {
+                return (
+                  <li key={index}>
+                    [{sku.attribute.color.toLocaleLowerCase()} -{"  "}
+                    {sku.attribute.size.toLocaleUpperCase()}] / ${sku.price}
+                  </li>
+                );
+              }
+            )}
           </ul>
         );
       },

@@ -28,7 +28,7 @@ const SideNav = () => {
                       // } `
 
                       className={clsx({
-                        "w-full px-4 pt-2 pb-2 rounded-md text-sm text-gray-500":
+                        "w-full px-4 pt-2 pb-2 rounded-md text-sm text-gray-500 cursor-pointer":
                           true,
                         "bg-blue-700 text-white": pathname.includes(r.path),
                       })}

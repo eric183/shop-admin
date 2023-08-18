@@ -37,6 +37,6 @@ export interface IBrandOrder {
     deposit: number | string;
     orderStatus: string;
   }[];
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }

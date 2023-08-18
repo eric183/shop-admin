@@ -10,11 +10,11 @@ const PageContainer = ({ children }: { children: React.ReactNode }) => {
   // console.log("reRender");
   const { data, status } = useSession();
 
-  // useEffect(() => {
-  //   if (status === "unauthenticated") {
-  //     redirect("/auth");
-  //   }
-  // }, [status]);
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      redirect("/auth");
+    }
+  }, [status]);
 
   // console.log(data, " user");
   return (

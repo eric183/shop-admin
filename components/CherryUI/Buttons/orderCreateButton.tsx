@@ -9,9 +9,10 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchGlobal } from "~app/api/sanityRest/global";
 import { Modal } from "antd";
 import { modalStore } from "../Modal";
+import { IBrandOrder } from "~types/brandOrder";
 
 interface Props {
-  datasource?: IOrder[];
+  datasource?: IOrderCreateSource;
   className?: string;
 }
 
@@ -46,13 +47,13 @@ const OrderCreateButton: FC<Props> = ({ datasource, className }) => {
 
       <CherryVisionModal>
         <BrandOrderForm
-          createSource={
-            {
-              accounts: reponseGlobal.data.accounts,
-              skus: reponseGlobal.data.skus,
-              brands: reponseGlobal.data.brands,
-            } as const as IOrderCreateSource
-          }
+          // createSource={
+          //   {
+          //     accounts: reponseGlobal.data.accounts,
+          //     skus: reponseGlobal.data.skus,
+          //     brands: reponseGlobal.data.brands,
+          //   } as const as IOrderCreateSource
+          // }
           datasource={[]}
         />
       </CherryVisionModal>

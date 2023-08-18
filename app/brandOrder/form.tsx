@@ -12,11 +12,7 @@ import clsx from "clsx";
 import React, { useState, useRef, useEffect } from "react";
 import { IProduct, Sku } from "~types/product";
 import { IOrder, IOrderCreateSource, OrderStatus } from "~types/order";
-import {
-  createOrder,
-  createOrderItem,
-  updateOrderItem,
-} from "~app/api/sanityRest/order";
+import { createOrder, updateOrderItem } from "~app/api/sanityRest/order";
 import { createAccount } from "~app/api/sanityRest/account";
 import { useUploadingStore } from "~components/CherryUI/GoogleUploader";
 import { modalStore } from "~components/CherryUI/Modal";
@@ -68,6 +64,7 @@ export interface IOrderFormDto {
   orderStatus: OrderStatus;
 }
 
+let saveOrder = {} as IBrandOrder;
 const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
   const reponseGlobal = useQuery({
     queryKey: ["global"],
@@ -123,7 +120,7 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
   const { setModalType, modalType } = modalStore();
   const [matchSPU, setMatchSPU] = useState<IProduct>(null!);
   const [fromTo, setFromTo] = useState<[Date, Date]>(null!);
-
+  const [updateOrderRecord, setUpdateOrderRecord] = useState<any>(null!);
   const { clearImageUrls, imageUrls, setImageUrls } = useUploadingStore();
 
   // const [order, setOrder] = useState<IOrderFormDto>(defaultOrder);
@@ -134,19 +131,15 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
   // brandsWithOrder.find((x) => x._id === foundBrandOrder?._id)
 
   const [orderIndex, setOrderIndex] = useState<number>(0);
-  const [domReady, setDomReady] = React.useState(false);
+  const [domReady, setDomReady] = useState(false);
 
   const [dynamicAccounts, setDynamicAccounts] =
     useState<IOrderCreateSource["accounts"]>(accounts);
 
-  const {
-    orderOpen,
-    setConfirmLoading,
-    confirmLoading,
-    setOrderOpen,
-    record,
-    setRecord,
-  } = modalStore();
+  const { orderOpen, setConfirmLoading, confirmLoading, setOrderOpen } =
+    modalStore();
+
+  const record = modalStore((state) => state.record);
 
   // const spu = datasource;
 
@@ -155,74 +148,30 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
   };
 
   const formSubitHandler = async (evt: any) => {
+    console.log(selectedBrandOrder, "....a");
+    console.log(`updateOrderRecord`, saveOrder, ".aaaaa");
     evt.preventDefault();
     setConfirmLoading(true);
 
     if (confirmLoading) return;
 
-    // if (!order.account) {
-    //   window.alert("请输入客户名");
-    //   return;
-    // }
-
-    // if (!order.orderItems) {
-    //   window.alert("请输入订单内容");
-    //   return;
-    // }
-
-    // if (!order.shipments) {
-    //   window.alert("请输入发货信息");
-    //   return;
-    // }
-
-    // debugger;
-
-    // order.account = order.account.isNew
-    //   ? (await createAccount(order.account))[0].document
-    //   : order.account;
-
     if (modalType === "create") {
-      const orderItemsRs = await createOrderItem({
+      const orderRs = await createOrder({
         ...selectedBrandOrder,
         brand: selectedBrand as IBrandOrder["brand"],
       });
-      const _userOrders = orderItemsRs.results
-        .filter(
-          (x: { document: { _type: "userOrder" | "orderItems" } }) =>
-            x.document._type === "userOrder"
-        )
-        .map((x: { document: [x: string] }) => x.document);
-
-      const orderRs = await createOrder(
-        {
-          ...selectedBrandOrder,
-          brand: selectedBrand as IBrandOrder["brand"],
-        },
-        _userOrders
-      );
     }
 
     if (modalType === "update") {
-      const recordOrderIds = order.orderItems.map((item) => item._id);
-
-      const currentOrders = order.orderItems.filter(
-        (item) => !recordOrderIds.includes(item._id)
+      const orderItemsRs = await createOrder(
+        selectedBrandOrder,
+        saveOrder.userOrders[0].orderItems
       );
-
-      const orderItemsRs = await updateOrderItem(brandOrders, record);
-
-      // const orderRs = await updateOrder(
-      //   order,
-      //   orderItemsRs.results.map((result: any) => result.document)
-      // );
     }
 
     setConfirmLoading(false);
     setOrderOpen(false);
     clearForm();
-    // await formPost(skuCreations, spuCreations, imagesCreations);
-
-    // here go set a fetch request to sanity.io
   };
 
   const clearForm = async () => {
@@ -272,12 +221,40 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
   useEffect(() => {
     if (!orderOpen) return;
     if (modalType === "update") {
-      setSelectedBrandOrder(record);
-      // debugger;
-
-      // setOrder(record);
+      setSelectedBrandOrder({ ...record });
+      const users = record.userOrders.map(
+        (x: { orderItems: IBrandOrder["userOrders"][0]["orderItems"] }) => ({
+          ...x,
+          orderItems: x.orderItems.map((y) => ({
+            ...y,
+          })),
+        })
+      );
+      setSelectedBrand({
+        _id: record.brand._id as string,
+        name: record.brand.name as string,
+        spus: brands.find((x) => x._id === record.brand._id)
+          ?.spus as IBrandOrder["brand"]["spus"],
+      });
+      saveOrder = {
+        _id: record._id,
+        userOrders: users,
+        // userOrder: {
+        //   account: users[0].account,
+        //   deposit: users[0].deposit,
+        //   discount: users[0].discount,
+        //   finalPayment: users[0].finalPayment,
+        //   orderItems: users[0].orderItems,
+        //   orderStatus: users[0].orderStatus,
+        //   _id: users[0]._id,
+        // },
+        brand: record.brand,
+        // deposit: record.userOrders[0].deposit,
+        // discount: record.userOrders[0].discount,
+        // finalPayment: record.userOrders[0].finalPayment,
+      };
     }
-  }, [orderOpen, record]);
+  }, [record]);
 
   useEffect(() => {
     setDomReady(true);
@@ -288,6 +265,7 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
   console.log(brandsWithOrders, "brandsWithOrders");
 
   console.log(`selectedBrandOrder`, selectedBrandOrder);
+  console.log(`record`, record);
   return (
     <article className="flex flex-row">
       <ArrowLeftCircleIcon
@@ -295,6 +273,7 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
           "w-8 fill-gray-400 cursor-pointer hover:fill-blue-500 transition-colors":
             true,
           "fill-blue-400": orderIndex > 0,
+          "hidden fill-blue-400": modalType === "update",
         })}
         onClick={() => {
           if (orderIndex > 0) {
@@ -371,10 +350,24 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
                         ? item._id === detail[1]
                         : item._id === detail[0]
                     );
-
                   setSelectedBrand(foundBrand!);
-                  // setSelectedBrandOrder([defaultOrder]);
-                  // setBrandOrders([defaultOrder]);
+
+                  setSelectedBrandOrder((prev) => ({
+                    ...prev,
+                    userOrders: prev.userOrders.map((u) => ({
+                      ...u,
+                      orderItems: u.orderItems.map((o) => ({
+                        ...o,
+                        quantity: 1,
+                        preOrderPrice: 0,
+                        isProductionPurchased: false,
+                        sku: {
+                          _id: undefined,
+                          name: "",
+                        },
+                      })),
+                    })),
+                  })) as any;
                   brandSelectRef.current.blur();
                 }}
                 className="w-full mt-2"
@@ -402,7 +395,6 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
                         ? item.brand._id === detail[1]
                         : item.brand._id === detail[0]
                     );
-
                   if (foundBrandOrder) {
                     const fountBrandWithOrder = brandsWithOrders.find(
                       (x) => x._id === foundBrandOrder._id
@@ -431,7 +423,7 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
                       .map((x) => ({ ...x }))
                       .map((item, index: number) => (
                         <Select.Option key={index} value={item.brand._id}>
-                          {item.brand.name + " " + toYMD(item?.createdAt)}
+                          {item.brand.name + " " + toYMD(item.createdAt!)}
                         </Select.Option>
                       ))
                   : brandsWithOrders
@@ -457,7 +449,7 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
       <motion.form
         ref={formRef}
         className="flex flex-row mx-2 w-full overflow-hidden pb-10"
-        onSubmit={formSubitHandler}
+        // onSubmit={formSubitHandler}
         initial={"hidden"}
         animate={"visible"}
         variants={{
@@ -559,18 +551,7 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
                     const currentOrderItems = order.orderItems
                       ? order.orderItems
                       : [];
-                    // const currentOrders = ];
 
-                    // currentOrderItems.push({
-                    //   skus: [
-                    //     {
-                    //       _id: undefined,
-                    //     },
-                    //   ],
-                    //   quantity: 1,
-                    //   preOrderPrice: 0,
-                    //   isProductionPurchased: false,
-                    // });
                     currentOrderItems.push({
                       sku: {
                         _id: undefined,
@@ -624,27 +605,34 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
                           placeholder="Please select"
                           onChange={(detail, de) => {
                             const currentOrderItems = [...order.orderItems];
-                            debugger;
                             currentOrderItems[orderItemIndex].sku = skus.find(
                               (sku) => sku._id === detail
                             )!;
 
                             setSelectedBrandOrder((prev) => {
                               const newOrder = { ...prev };
+                              const _brand = prev.brand._id
+                                ? prev.brand
+                                : brands.find((f) =>
+                                    f.spus.find(
+                                      (p) =>
+                                        p._id ===
+                                        skus.find((sk) => sk._id === detail)!
+                                          .spu.spuId
+                                    )
+                                  )!;
+
+                              setSelectedBrand({
+                                ..._brand,
+                                spus: brands.find((x) => x._id === _brand._id)
+                                  ?.spus as IBrandOrder["brand"]["spus"],
+                              });
+
                               newOrder.userOrders[index].orderItems =
                                 currentOrderItems;
+
                               return newOrder;
                             });
-
-                            // setBrandOrders((prev) => {
-                            //   const newOrders = [...prev];
-                            //   newOrders[index].orderItems = currentOrderItems;
-                            //   return newOrders;
-                            // });
-                            // setOrder({
-                            //   ...order,
-                            //   orderItems: currentOrderItems,
-                            // });
                           }}
                           className="w-full"
                           size="small"
@@ -678,12 +666,6 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
                                 currentOrderItems;
                               return newOrder;
                             });
-
-                            // setBrandOrders((prev) => {
-                            //   const newOrders = [...prev];
-                            //   newOrders[index].orderItems = currentOrderItems;
-                            //   return newOrders;
-                            // });
                           }}
                         />
                         <label
@@ -712,11 +694,6 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
                                 currentOrderItems;
                               return newOrder;
                             });
-                            // setBrandOrders((prev) => {
-                            //   const newOrders = [...prev];
-                            //   newOrders[index].orderItems = currentOrderItems;
-                            //   return newOrders;
-                            // });
                           }}
                           name={`quantity_${orderItemIndex}`}
                           id="attribute_color"
@@ -748,11 +725,6 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
                                 currentOrderItems;
                               return newOrder;
                             });
-                            // setBrandOrders((prev) => {
-                            //   const newOrders = [...prev];
-                            //   newOrders[index].orderItems = currentOrderItems;
-                            //   return newOrders;
-                            // });
                           }}
                           name={`preOrderPrice_${orderItemIndex}`}
                           id="preOrderPrice"
@@ -790,18 +762,6 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
                       );
                       return newOrder;
                     });
-
-                    // setOrder({
-                    //   ...order,
-                    //   deposit: parseFloat(event.target.value),
-                    // });
-                    // setBrandOrders((prev) => {
-                    //   const newOrders = [...prev];
-                    //   newOrders[index].deposit = parseFloat(
-                    //     event.target.value
-                    //   );
-                    //   return newOrders;
-                    // });
                   }}
                 />
                 <label
@@ -827,17 +787,6 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
                       );
                       return newOrder;
                     });
-                    // setOrder({
-                    //   ...order,
-                    //   discount: parseFloat(event.target.value),
-                    // });
-                    // setBrandOrders((prev) => {
-                    //   const newOrders = [...prev];
-                    //   newOrders[index].discount = parseFloat(
-                    //     event.target.value
-                    //   );
-                    //   return newOrders;
-                    // });
                   }}
                 />
                 <label
@@ -856,19 +805,6 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
                   placeholder=" "
                   value={order.finalPayment}
                   onChange={(event) => {
-                    // setOrder({
-                    //   ...order,
-                    //   finalPayment: parseFloat(event.target.value),
-                    // });
-
-                    // setBrandOrders((prev) => {
-                    //   const newOrders = [...prev];
-                    //   newOrders[index].finalPayment = parseFloat(
-                    //     event.target.value
-                    //   );
-                    //   return newOrders;
-                    // });
-
                     setSelectedBrandOrder((prev) => {
                       const newOrder = { ...prev };
                       newOrder.userOrders[index].finalPayment = parseFloat(
@@ -897,16 +833,6 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
               <Select
                 placeholder="Please select a status"
                 onChange={(detail) => {
-                  // setOrder({
-                  //   ...order,
-                  //   orderStatus: detail,
-                  // });
-                  // setBrandOrders((prev) => {
-                  //   const newOrders = [...prev];
-                  //   newOrders[index].orderStatus = detail;
-                  //   return newOrders;
-                  // });
-
                   setSelectedBrandOrder((prev) => {
                     const newOrder = { ...prev };
                     newOrder.userOrders[index].orderStatus = detail;
@@ -928,14 +854,13 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
         ))}
       </motion.form>
       <ArrowRightCircleIcon
-        className="w-8 fill-blue-400 cursor-pointer"
+        className={clsx({
+          "w-8 cursor-pointer": true,
+          "fill-gray-400 hidden": modalType === "update",
+          "fill-blue-400": modalType === "create",
+        })}
         onClick={() => {
-          // if (orderIndex === brandOrders.length - 1) {
-          //   return;
-          // }
-          // if (orderIndex === brandOrders.length - 2) {
-          //   setBrandOrders((state) => [...state, defaultOrder]);
-          // }
+          if (modalType === "update") return;
           const currentIndex = orderIndex + 1;
           setOrderIndex(currentIndex);
           console.log(selectedBrandOrder.userOrders.length);
@@ -1010,36 +935,5 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
     </article>
   );
 };
-
-function useForceUpdate() {
-  const [value, setState] = useState(true);
-
-  return () => setState(!value);
-}
-
-const Pager = ({ current, total }) => {
-  const [, updateState] = React.useState();
-  const forceUpdate = React.useCallback(() => updateState({}), []);
-
-  // const handleForceupdateMethod = useForceUpdate();
-  useEffect(() => {
-    console.log(total, "total");
-    forceUpdate();
-  }, [total]);
-
-  const Renders = React.useMemo(
-    () => <Pagination current={current} total={total} />,
-    [total]
-  );
-  return Renders;
-};
-
-function useConditionalEffect(condition, effect) {
-  useEffect(() => {
-    if (condition) {
-      effect();
-    }
-  }, [condition, effect]);
-}
 
 export default BrandOrderForm;

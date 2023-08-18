@@ -1,15 +1,14 @@
 "use client";
 
 import type { ColumnsType } from "antd/es/table";
-import Link from "next/link";
 import { IOrder } from "~types/order";
-import { Button, Drawer, Image, Popconfirm, Tooltip } from "antd";
-import { useState } from "react";
+import { Button, Popconfirm } from "antd";
 import { deleteOrder } from "~app/api/sanityRest/order";
 import { useQueryClient } from "@tanstack/react-query";
 import { drawStore } from "./drawer";
 import dayjs from "dayjs";
 import { modalStore } from "~components/CherryUI/Modal";
+import { IBrandOrder } from "~types/brandOrder";
 const useColumns = (refetch: () => void) => {
   const queryClient = useQueryClient();
   // const [record, setEditRecord] = useState<IOrder | null>(null);
@@ -19,7 +18,7 @@ const useColumns = (refetch: () => void) => {
     setDrawOpen(false);
   };
 
-  const columns: ColumnsType<IOrder> = [
+  const columns: ColumnsType<IBrandOrder["userOrders"][0]> = [
     // {
     //   title: "订单号",
     //   dataIndex: "_id",
@@ -37,7 +36,7 @@ const useColumns = (refetch: () => void) => {
       dataIndex: "account",
       key: "account",
       render: (account: IOrder["account"], record) => {
-        return <span className="font-bold">{account.username}</span>;
+        return <span className="font-bold">{account?.username}</span>;
       },
     },
     {
@@ -105,17 +104,17 @@ const useColumns = (refetch: () => void) => {
     },
     {
       title: "操作",
-      dataIndex: "_id",
-      key: "_id",
+      dataIndex: "orderItems",
+      key: "orderItems",
       align: "center",
-      render: (id, record) => {
+      render: (orderItems, record) => {
         return (
           <div>
             <Button
               type="link"
               onClick={() => {
                 setDrawOpen(true);
-                setDrawInfo(record.orderItems);
+                setDrawInfo(orderItems!);
               }}
               className="text-green-400"
             >
@@ -136,7 +135,9 @@ const useColumns = (refetch: () => void) => {
             <Popconfirm
               title="确定删除吗？"
               onConfirm={async () => {
-                await deleteOrder(id);
+                await deleteOrder(
+                  record as unknown as IBrandOrder["userOrders"][0]
+                );
                 await refetch();
               }}
             >

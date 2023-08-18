@@ -45,6 +45,7 @@ const useColumns = (refetch: () => void) => {
       render: (name: string, record) => {
         return (
           <Link
+            prefetch={false}
             href={
               pathname + "?" + querySearch.toString() + "&brandId=" + record._id
             }
