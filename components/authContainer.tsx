@@ -3,15 +3,13 @@
 import { useQuery } from "@tanstack/react-query";
 // import { Alert, AlertIcon } from "@chakra-ui/react";
 import { Button } from "antd";
-import { GetServerSideProps } from "next";
 import {
   ClientSafeProvider,
   getCsrfToken,
   getProviders,
   signIn,
 } from "next-auth/react";
-import { useRouter } from "next/router";
-import { use, useState } from "react";
+import { useState } from "react";
 import styles from "../styles/Signin.module.css";
 import clsx from "clsx";
 import { motion } from "framer-motion";

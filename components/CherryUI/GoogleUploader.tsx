@@ -32,8 +32,7 @@ export const useUploadingStore = create<IGoogleUploaderProps>()((set) => ({
 }));
 
 const GoogleUploader = forwardRef((props, ref) => {
-  const { uploading, setUpload, imageUrls, setImageUrls, clearImageUrls } =
-    useUploadingStore();
+  const { imageUrls, setImageUrls, clearImageUrls } = useUploadingStore();
   const [loading, setLoading] = useState(false);
   // const [imageUrls, setImageUrls] = useState<UploadFile[]>();
   const [upload] = useGoogleImage();

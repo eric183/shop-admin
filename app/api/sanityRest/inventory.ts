@@ -9,7 +9,7 @@ export interface InventoryMutation {
   actualQuantity: number;
 }
 
-const getInventory = async (skuId) => {
+const getInventory = async (skuId: string) => {
   const response = await sanityClient.fetch(getInventoryItem, {
     skuId,
   });
@@ -23,7 +23,6 @@ export const createOrUpdateInventory = async (inventory: InventoryMutation) => {
 
   // const res = await getInventory(_id);
 
-  debugger;
   return;
   const response = await sanityMutationClient({
     mutations: [

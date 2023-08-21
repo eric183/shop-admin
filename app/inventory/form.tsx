@@ -10,9 +10,7 @@ import GoogleUploader, {
   useUploadingStore,
 } from "~components/CherryUI/GoogleUploader";
 import { modalStore } from "~components/CherryUI/Modal";
-import { IOrderCreateSource } from "~types/order";
-import { debug } from "console";
-import spu from "~base/sanity/schemas/spu";
+import { IOrderCreateSource, IOrderform } from "~types/order";
 
 interface Props {
   datasource: IProduct[];
@@ -27,21 +25,15 @@ const ProductForm: React.FC<Props> = ({
   refetch,
   createSource,
 }) => {
-  const { brands, inventories, globalSkus } = createSource;
+  const { brands } = createSource;
   const products = datasource;
 
   const brandSelectRef = useRef<any>(null!);
-  const { setModalType, modalType } = modalStore();
+  const { modalType } = modalStore();
   const [matchProduct, setMatchProduct] = useState<IProduct>(null!);
   const { clearImageUrls, imageUrls, setImageUrls } = useUploadingStore();
-  const {
-    open,
-    setConfirmLoading,
-    confirmLoading,
-    setOpen,
-    record,
-    setRecord,
-  } = modalStore();
+  const { open, setConfirmLoading, confirmLoading, setOpen, record } =
+    modalStore();
   const [formData, setFormData] = useState<Partial<IProduct>>({
     spus: [],
     spu: {
@@ -58,7 +50,6 @@ const ProductForm: React.FC<Props> = ({
     },
   });
 
-  const [currentProducts, setCurrentProducts] = useState<IProduct[]>(products);
   const GoogleUploaderRef = useRef<any>(null!);
 
   const selectRef = useRef<any>();
@@ -99,72 +90,10 @@ const ProductForm: React.FC<Props> = ({
     selectRef.current.blur();
   };
 
-  const aiCreate = async () => {
-    const prompt = window.prompt("请输入数据");
-    const embeddingPrompt = `{
-      items: [{
-      "name": "",
-      "type": "",
-      "brand": "",
-      "sizes": [{ "color": "","size": "", "quantity": 0}],
-      "link": ""}]
-      }
-
-      按这个结构来如上结构，请填充下面的数据，帮我整理成一个叫做shopJSON的json, 只要给我JSON片段，不要其他废话：
-      ${prompt}`;
-    // {
-    //   items: [{
-    //   "name": "",
-    //   "type": "",
-    //   "brand": "",
-    //   "sizes": [{ "color": "","size": "", "quantity": 0}],
-    //   "link": ""}]
-    //   }
-
-    //   按这个结构来如上结构，请填充下面的数据，帮我整理成一个叫做shopJSON的json, 只要给我JSON片段，不要其他废话：
-    const response: any = await fetch(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_CHATGPT_API_TOKEN}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          stream: false,
-          // temperature: 0.7,
-          temperature: 0,
-          max_tokens: 1500,
-          // stop: "\n",
-          // top_p: 1,
-          frequency_penalty: 0,
-          presence_penalty: 0,
-          // user: body?.user,
-          n: 1,
-          messages: [
-            {
-              role: "user",
-              content: embeddingPrompt, // 4096
-            },
-          ],
-        }),
-      }
-    ).catch((error) => {
-      window.alert("设置错误，请检查网络");
-      console.log(error.message);
-    });
-    const data = await response?.json();
-    const choice = data?.choices[0];
-    const jsonContent = choice.message.content;
-
-    console.log(jsonContent, "Reponse_JSON");
-  };
-
   const skuInputChangeHandler = (evt: any) => {
     const [attribute, info, index] = evt.target.name.split("_") as string[];
 
-    const { name, value } = evt.target;
+    const { value } = evt.target;
 
     const currentSku = formData.spu!.skus![Number(index)];
 
@@ -195,14 +124,6 @@ const ProductForm: React.FC<Props> = ({
     // skus: formData.spuskus!,
   };
 
-  const inputChangeHandler = (evt: any) => {
-    const { name, value } = evt.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
   const formSubitHandler = async (evt: any) => {
     if (confirmLoading) return;
     evt.preventDefault();
@@ -228,7 +149,7 @@ const ProductForm: React.FC<Props> = ({
         images: imagesCreations,
       };
 
-      await createProduct(createForm);
+      await createProduct(createForm as unknown as IOrderform);
     }
 
     if (modalType === "update") {
@@ -311,7 +232,7 @@ const ProductForm: React.FC<Props> = ({
           size="small"
           maxTagCount={1}
           placeholder="请选择品牌"
-          onChange={(detail, de) => {
+          onChange={(detail) => {
             const foundBrand = brands.find((item) =>
               detail.length >= 2
                 ? item._id === detail[1]
@@ -355,7 +276,7 @@ const ProductForm: React.FC<Props> = ({
           size="small"
           maxTagCount={1}
           placeholder="请选择品类名称"
-          onChange={(detail, dd) => {
+          onChange={(detail) => {
             const foundSPU = products.find((s) =>
               detail.length >= 2 ? s._id === detail[1] : s._id === detail[0]
             );

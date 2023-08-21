@@ -1,14 +1,13 @@
 "use client";
 
 import { ColumnsType } from "antd/es/table";
-import { useState } from "react";
 import CherryTable from "~components/CherryUI/Table";
 import { IProduct } from "~types/product";
 import useColumns from "./columns";
 import { useQuery } from "@tanstack/react-query";
 import CreateButton from "./createButton";
 import ProductForm from "./form";
-import productQuery, { productRootQuery } from "~app/api/groqs/product";
+import productQuery from "~app/api/groqs/product";
 import { sanityClient } from "~base/sanity/client";
 import CherryVisionModal from "~components/CherryUI/Modal";
 import { fetchGlobal } from "~app/api/sanityRest/global";

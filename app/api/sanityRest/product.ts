@@ -1,9 +1,8 @@
 import { sanityMutationClient } from "~base/sanity/client";
 import { v4 as uuidv4 } from "uuid";
-import { IProduct, SPU, Sku } from "~types/product";
+import { SPU, Sku } from "~types/product";
 import { IOrderform } from "~types/order";
 import { Inventory } from "~types/inventory";
-import sku from "~base/sanity/schemas/sku";
 
 // create images
 export const createSpuImages = async (
@@ -26,7 +25,7 @@ export const createSpuImages = async (
 };
 
 export const createProduct = async (_formData_: IOrderform) => {
-  const { name, category, brand, images, _id, spu } = _formData_;
+  const { category, brand, images, spu } = _formData_;
 
   const brandID = brand._id ? brand._id : uuidv4();
   const spuId = spu._id ? spu._id : uuidv4();
@@ -48,7 +47,6 @@ export const createProduct = async (_formData_: IOrderform) => {
       },
     },
   ];
-  debugger;
   if (skus && skus.length > 0) {
     mutations.push(
       ...skus.map(({ _id, attribute, price, inventory }) => {
@@ -103,7 +101,7 @@ export const updateProduct = async (
   formData: any,
   productInfo: any
 ) => {
-  const { spu, _id, category, images, name, brand } = formData;
+  const { spu, category, images, name, brand } = formData;
   const { skus } = spu;
 
   const brandID = brand._id;
@@ -131,10 +129,6 @@ export const updateProduct = async (
       // delete
       const skuIds = skus.map((sku: { _id: string }) => sku._id!);
 
-      const noSkuToDelete = productInfo.skus.filter((sku: { _id: string }) =>
-        skuIds.includes(sku._id!)
-      );
-
       const skuToDelete = productInfo.skus.filter(
         (sku: { _id: string }) => !skuIds.includes(sku._id!)
       );
@@ -156,7 +150,6 @@ export const updateProduct = async (
       );
     } else {
       // create
-      const skuIds = productInfo.skus.map((sku: { _id: string }) => sku._id);
       // const skuToCreate = skus.filter((sku) => !skuIds.includes(sku._id));
       mutations.push(
         ...skus.map(

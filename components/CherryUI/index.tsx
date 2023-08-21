@@ -1,4 +1,4 @@
-import React, { FC, Fragment } from "react";
+import React, { FC } from "react";
 import SideNav from "./SideNav";
 import Avatar from "./Avatar";
 
