@@ -23,7 +23,7 @@ const Root = () => {
   });
 
   const { data, status, refetch } = useQuery({
-    queryKey: ["product"],
+    queryKey: ["inventory"],
     queryFn: async () =>
       await sanityClient.fetch<Inventory[]>(getInventories, {
         start: 0,

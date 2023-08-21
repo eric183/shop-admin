@@ -68,7 +68,7 @@ const useColumns = (refetch: () => void) => {
       render(skus: IProduct["skus"], record, index) {
         return (
           <ul>
-            {skus!.map((sku) => {
+            {skus?.map((sku) => {
               return (
                 <li key={index}>
                   [{sku.attribute.color.toLocaleLowerCase()} -{"  "}

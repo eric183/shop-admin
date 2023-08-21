@@ -53,7 +53,7 @@ const useColumns = (refetch: () => void) => {
       dataIndex: "skuDetail",
       key: "skuDetail",
       render: (skuDetail) => (
-        <ImagePreviewTool images={skuDetail.spu.imageURLs}></ImagePreviewTool>
+        <ImagePreviewTool images={skuDetail?.spu?.imageURLs}></ImagePreviewTool>
       ),
     },
     {
