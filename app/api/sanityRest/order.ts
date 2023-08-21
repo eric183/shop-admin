@@ -82,6 +82,20 @@ export const createOrder = async (
     userOrder.orderItems.forEach((orderItem) => {
       const orderItemId = orderItem._id ? orderItem._id : uuidv4();
       userOrder.account._key = uuidv4();
+
+      // orderItem.sku?.inventory?.preQuantity =
+      //   Number(orderItem.sku?.inventory?.preQuantity) +
+      //   Number(orderItem.quantity);
+      formatOrder.push({
+        patch: {
+          id: orderItem.sku?.inventory?._id,
+          set: {
+            preQuantity:
+              Number(orderItem.sku?.inventory?.preQuantity) +
+              Number(orderItem.quantity),
+          },
+        },
+      });
       formatOrder.push({
         createOrReplace: {
           _type: "orderItem",

@@ -9,6 +9,12 @@ const productQuery = groq`*[_type == "spu"][$start... $limit]{
     _id,
     price,
     attribute,
+    "inventory": *[_type == "inventory" && references(^._id)][0] {
+      _id,
+      remainQuantity,
+      preQuantity,
+      actualQuantity
+    } 
   },
   "brand": brand->{_id, name},
   _createdAt,
@@ -28,7 +34,7 @@ export const getProductId = groq`*[_type == "spu" && _id == $id][0]{
       _ref,
       attribute,
       price,
-      "inventory": *[_type == "inventory" && _id == ^.inventory._ref][0] {
+      "inventory": *[_type == "inventory"] {
         _id,
         _ref,
         remainQuantity,

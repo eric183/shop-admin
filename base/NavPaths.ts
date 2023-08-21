@@ -28,6 +28,13 @@ const RoutePaths: RoutePathesType[] = [
     sort: 2,
   },
   {
+    path: "inventory",
+    linkLabel: "库存管理",
+    parent: null,
+    children: [],
+    sort: 2,
+  },
+  {
     path: "address",
     linkLabel: "地址管理",
     parent: null,

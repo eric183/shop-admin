@@ -154,7 +154,6 @@ const BrandOrderForm: React.FC<Props> = ({ datasource }) => {
     setConfirmLoading(true);
 
     if (confirmLoading) return;
-
     if (modalType === "create") {
       const orderRs = await createOrder({
         ...selectedBrandOrder,

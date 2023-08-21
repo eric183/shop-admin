@@ -1,3 +1,4 @@
+import { Inventory } from "./inventory";
 import { IProduct } from "./product";
 
 export interface IBrandOrder {
@@ -30,6 +31,7 @@ export interface IBrandOrder {
           name: string;
           images?: string[];
         };
+        inventory?: Inventory;
       };
     }[];
     discount: number | string;

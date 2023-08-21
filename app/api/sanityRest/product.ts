@@ -1,6 +1,9 @@
 import { sanityMutationClient } from "~base/sanity/client";
 import { v4 as uuidv4 } from "uuid";
-import { IProduct } from "~types/product";
+import { IProduct, SPU, Sku } from "~types/product";
+import { IOrderform } from "~types/order";
+import { Inventory } from "~types/inventory";
+import sku from "~base/sanity/schemas/sku";
 
 // create images
 export const createSpuImages = async (
@@ -22,7 +25,7 @@ export const createSpuImages = async (
   });
 };
 
-export const createProduct = async (_formData_: any) => {
+export const createProduct = async (_formData_: IOrderform) => {
   const { name, category, brand, images, _id, spu } = _formData_;
 
   const brandID = brand._id ? brand._id : uuidv4();
@@ -45,12 +48,28 @@ export const createProduct = async (_formData_: any) => {
       },
     },
   ];
-
+  debugger;
   if (skus && skus.length > 0) {
     mutations.push(
-      ...skus.map(({ _id, attribute, price }: any) => {
+      ...skus.map(({ _id, attribute, price, inventory }) => {
         const skuId = _id ? _id : uuidv4();
-
+        const inventoryId = inventory ? inventory._id : uuidv4();
+        mutations.push({
+          createOrReplace: {
+            id: inventoryId,
+            _type: "inventory",
+            skuDetail: {
+              _type: "reference",
+              _ref: skuId,
+            },
+            // 预购（计划）库存
+            preQuantity: 0,
+            // 实际入库库存 = 有效订单 sku  + 剩余库存
+            actualQuantity: 0,
+            // 剩余库存
+            remainQuantity: 0,
+          },
+        });
         return {
           createOrReplace: {
             _type: "sku",
@@ -121,16 +140,12 @@ export const updateProduct = async (
       );
 
       mutations.push(
-        ...skuToDelete.map((sku: { _id: string }) => {
-          // const foundInventory = inventory?.find((i: any) =>
-          //   i.skus.find((x: any) => x?.id === sku._id)
-          // );
-          // const inventoryId = foundInventory!._id;
-          // mutations.push({
-          //   delete: {
-          //     id: inventoryId,
-          //   },
-          // });
+        ...skuToDelete.map((sku: { _id: string; inventory: Inventory }) => {
+          mutations.push({
+            delete: {
+              id: sku.inventory._id,
+            },
+          });
 
           return {
             delete: {
@@ -149,30 +164,28 @@ export const updateProduct = async (
             _id: string;
             price: string;
             attribute: { color: string; size: string };
+            inventory: Inventory;
           }) => {
             const skuId = sku._id ? sku._id : uuidv4();
-            // const foundInventory = inventory?.find((i: any) =>
-            //   i.skus.find((x: any) => x?.id === sku._id)
-            // );
+            const inventoryId = sku.inventory ? sku.inventory._id : uuidv4();
 
-            // const inventoryId = foundInventory ? foundInventory._id : uuidv4();
+            mutations.push({
+              createOrReplace: {
+                _id: inventoryId,
+                _type: "inventory",
+                skuDetail: {
+                  _type: "reference",
+                  _ref: skuId,
+                },
+                // 预购（计划）库存
+                preQuantity: 0,
+                // 实际入库库存 = 有效订单 sku  + 剩余库存
+                actualQuantity: 0,
+                // 剩余库存
+                remainQuantity: 0,
+              },
+            });
 
-            // mutations.push({
-            //   createOrReplace: {
-            //     _type: "inventory",
-            //     _id: inventoryId,
-            //     spu: {
-            //       _type: "reference",
-            //       _ref: spuId,
-            //     },
-            //     skus: [
-            //       {
-            //         _key: uuidv4(),
-            //         id: skuId,
-            //       },
-            //     ],
-            //   },
-            // });
             return {
               createOrReplace: {
                 _type: "sku",
@@ -209,7 +222,7 @@ export const updateProduct = async (
   });
 };
 
-export const deleteProduct = async (spu: any) => {
+export const deleteProduct = async (spu: SPU) => {
   const mutations: any = [
     {
       delete: {
@@ -218,12 +231,17 @@ export const deleteProduct = async (spu: any) => {
     },
   ];
 
-  const skuIds = spu.skus.map((sku: { _id: any }) => sku._id);
+  const skus = spu?.skus?.map((sku) => sku) as Sku[];
   mutations.push(
-    ...skuIds.map((skuId: any) => {
+    ...skus.map((sku) => {
+      mutations.push({
+        delete: {
+          id: sku?.inventory?._id,
+        },
+      });
       return {
         delete: {
-          id: skuId,
+          id: sku._id,
         },
       };
     })

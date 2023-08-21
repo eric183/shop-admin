@@ -3,7 +3,17 @@ import { groq } from "next-sanity";
 const globalQuery = groq`*[_type == "user"]{
   _id,
   "accounts": *[_type == "account"] { _id, username },
-  "skus": *[_type == "sku"] { _id, attribute, "spu": *[_type == "spu" && _id == ^.spu._ref][0]{ "spuId": _id, name }  },
+  "skus": *[_type == "sku"] { 
+    _id, 
+    attribute, 
+    "inventory": *[_type == "inventory" && references(^._id)][0] {
+      _id,
+      remainQuantity,
+      preQuantity,
+      actualQuantity
+    }, 
+    "spu": *[_type == "spu" && _id == ^.spu._ref][0]{ "spuId": _id, name }  
+  },
   "username": account->username,
   "brands": *[_type == "brand"]{ 
     _id,

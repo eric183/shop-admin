@@ -1,3 +1,7 @@
+import { IBrandOrder } from "./brandOrder";
+import { Inventory } from "./inventory";
+import { SPU } from "./product";
+
 export interface IOrder {
   _updatedAt: string;
   finalPayment: number;
@@ -30,6 +34,7 @@ interface Sku {
 
 interface Spu {
   _id: string;
+  spuId: string;
   name: string;
   imageURLs: {
     asset: {
@@ -48,20 +53,6 @@ interface Shipment {
   trackingNumber: string;
 }
 
-interface Inventory {
-  _id: string;
-  _ref: string;
-  spu: {
-    _ref: string;
-  };
-  skus: {
-    _id: string;
-    id?: string;
-    sku: { _ref: string; _type: string };
-    _key: string;
-    _type: string;
-  }[];
-}
 export interface IOrderCreateSource {
   _id: string;
   accounts: Account[];
@@ -93,10 +84,10 @@ interface Attribute {
   size: string;
 }
 
-interface Spu {
-  spuId: string;
-  name: string;
-}
+// interface Spu {
+//   spuId: string;
+//   name: string;
+// }
 
 export type OrderStatus =
   | "UNPAID"
@@ -105,3 +96,12 @@ export type OrderStatus =
   | "SHIPPED"
   | "RECEIVED"
   | "CANCELLED";
+
+export interface IOrderform {
+  _id?: string;
+  name?: string;
+  category?: string;
+  brand: IBrandOrder["brand"];
+  images: SPU["imageURLs"];
+  spu: SPU;
+}

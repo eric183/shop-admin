@@ -34,6 +34,12 @@ export const brandOrderQuery = groq`*[_type == "brand" && _createdAt >= $dateRan
             "color": attribute.color,
             "size": attribute.size,
           },
+          "inventory": *[_type == "inventory" && references(^._id)][0] {
+            _id,
+            remainQuantity,
+            preQuantity,
+            actualQuantity
+          }, 
           "spuColorSize": *[_type == "spu" && _id == ^.spu._ref] {_id, name}[0].name + " : " + attribute.color + " - " + attribute.size,
           "spu": *[_type == "spu" && _id == ^.spu._ref][0] {
             _id, 

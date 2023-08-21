@@ -65,33 +65,19 @@ const useColumns = (refetch: () => void) => {
       title: "商品规格 / 价格 ",
       dataIndex: "skus",
       key: "skus",
-      render(skus, record, index) {
+      render(skus: IProduct["skus"], record, index) {
         return (
           <ul>
-            {skus.map(
-              (
-                sku: {
-                  attribute: { color: string; size: string };
-                  price:
-                    | string
-                    | number
-                    | boolean
-                    | ReactElement<any, string | JSXElementConstructor<any>>
-                    | ReactFragment
-                    | ReactPortal
-                    | null
-                    | undefined;
-                },
-                index: Key | null | undefined
-              ) => {
-                return (
-                  <li key={index}>
-                    [{sku.attribute.color.toLocaleLowerCase()} -{"  "}
-                    {sku.attribute.size.toLocaleUpperCase()}] / ${sku.price}
-                  </li>
-                );
-              }
-            )}
+            {skus!.map((sku) => {
+              return (
+                <li key={index}>
+                  [{sku.attribute.color.toLocaleLowerCase()} -{"  "}
+                  {sku.attribute.size.toLocaleUpperCase()}] / ${sku.price} /{" "}
+                  [计划库存：
+                  {sku?.inventory?.preQuantity}]
+                </li>
+              );
+            })}
           </ul>
         );
       },
