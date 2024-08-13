@@ -13,7 +13,7 @@ import {
   useScroll,
 } from "@react-three/drei";
 
-import { useControls } from "leva";
+import { buttonGroup, useControls } from "leva";
 import {
   ChangeEvent,
   FC,
